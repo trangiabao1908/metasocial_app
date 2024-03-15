@@ -155,6 +155,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  loginText: {
+    fontSize: 15,
+    color: "#FFFFFF",
+    fontWeight: "500",
+  },
   textInput: {
     marginBottom: 10,
     borderRadius: 7,

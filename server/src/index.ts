@@ -65,6 +65,6 @@ io.on("connection", (socket: Socket) => {
     }
   });
 });
-http.listen(8000, () => {
-  console.log("Socket.IO listening on port 8000");
+http.listen(443, () => {
+  console.log("Socket.IO listening on port 443");
 });
