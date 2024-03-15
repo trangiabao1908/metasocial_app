@@ -1,0 +1,132 @@
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import Icon from "react-native-vector-icons/AntDesign";
+import Icon3 from "react-native-vector-icons/Entypo";
+import Icon2 from "react-native-vector-icons/Feather";
+import Icon4 from "react-native-vector-icons/FontAwesome";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
+import ImageCustom from "./custom/imageCustom";
+
+const Footer = ({ navigation, isActive }) => {
+  const user = useSelector((state) => state?.userState?.user);
+
+  // const [isActive, setIsActive] = useState(0);
+
+  return (
+    <SafeAreaView
+      style={styles.icon}
+      edges={["right", "left", Platform.OS === "ios" ? "" : "bottom"]}
+    >
+      {isActive === 0 ? (
+        <Icon3.Button
+          name="home"
+          size={25}
+          color="#000"
+          backgroundColor="#ffffff"
+          iconStyle={{
+            marginRight: 0,
+          }}
+        />
+      ) : (
+        <Icon2.Button
+          name="home"
+          size={25}
+          color="#000"
+          backgroundColor="#ffffff"
+          iconStyle={{
+            marginRight: 0,
+          }}
+          onPress={() => {
+            navigation.navigate("Home");
+          }}
+        />
+      )}
+      {isActive === 1 ? (
+        <Icon4.Button
+          name="search"
+          size={25}
+          color="#000"
+          backgroundColor="#ffffff"
+          iconStyle={{
+            marginRight: 0,
+            // fontWeight: "bold",
+          }}
+          onPress={() => navigation.navigate("Search")}
+        />
+      ) : (
+        <Icon2.Button
+          name="search"
+          size={25}
+          color="#000"
+          backgroundColor="#ffffff"
+          iconStyle={{
+            marginRight: 0,
+            fontWeight: "bold",
+          }}
+          onPress={() => navigation.navigate("Search")}
+        />
+      )}
+      <Icon.Button
+        name="pluscircleo"
+        size={25}
+        color="#000"
+        backgroundColor="#ffffff"
+        iconStyle={{
+          marginRight: 0,
+        }}
+        onPress={() => navigation.navigate("Post", { type: "post", data: {} })}
+      />
+      <Icon2.Button
+        name="users"
+        size={25}
+        color="#000"
+        backgroundColor="#ffffff"
+        iconStyle={{
+          marginRight: 0,
+        }}
+        onPress={() => navigation.navigate("Friend")}
+      />
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Personal", { type: "personal" })}
+      >
+        <View>
+          <View
+            style={{
+              // padding: 10,
+              borderColor: isActive === 4 ? "black" : "#EAEAEA",
+              borderWidth: isActive === 4 ? 2 : 1,
+              borderRadius: 360,
+              height: 30,
+              width: 30,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ImageCustom
+              style={{ width: 25, height: 25 }}
+              resizeMode="cover"
+              type="avatar"
+              source={{
+                uri: user.picturePath,
+              }}
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  icon: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    padding: 7,
+  },
+});
+
+export default Footer;
