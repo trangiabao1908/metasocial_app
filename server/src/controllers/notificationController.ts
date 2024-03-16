@@ -5,6 +5,7 @@ const notificationController = {
   getNotice: async (req: Request, res: Response) => {
     const userId = req.user.userId;
     const today = new Date();
+
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -22,7 +23,11 @@ const notificationController = {
         path: "sender",
         select: "username _id picturePath",
       })
-      .populate({ path: "post", select: "_id assets " });
+      // .populate({
+      //   path: "receiver",
+      //   select: "username _id picturePath",
+      // })
+      .populate({ path: "post", select: "_id assets author" });
 
     const noticesIn7Days = await Notification.find({
       receiver: userId,
@@ -35,7 +40,7 @@ const notificationController = {
         path: "sender",
         select: "username _id picturePath",
       })
-      .populate({ path: "post", select: "_id assets " });
+      .populate({ path: "post", select: "_id assets author" });
 
     const noticesIn30Days = await Notification.find({
       receiver: userId,
@@ -48,7 +53,7 @@ const notificationController = {
         path: "sender",
         select: "username _id picturePath",
       })
-      .populate({ path: "post", select: "_id assets " });
+      .populate({ path: "post", select: "_id assets author" });
 
     return res.status(200).json({
       noticesToday: noticesToday,

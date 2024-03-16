@@ -98,4 +98,18 @@ router.put(
   postController.updateReplyComment
 );
 
+// hide comment
+router.put(
+  "/comment/hide/:id",
+  middlewareAuth.verifyToken,
+  postController.hideComment
+);
+
+// get like list
+router.get(
+  "/like/list/:id",
+  middlewareAuth.verifyToken,
+  postController.getLikeList
+);
+
 export default router;

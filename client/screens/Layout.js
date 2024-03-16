@@ -1,6 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 // Import Screen
 import EditPerScreen from "../components/personal/edit.js";
 import ChatScreen from "./Chat/chat.js";
@@ -13,6 +13,7 @@ import PostScreen from "./Post/post";
 import FriendScreen from "./Friend/Friends.js";
 import SearchScreen from "./Search/search.js";
 import Notification from "./Notification/Notification.js";
+import LikeScreen from "./Like/like.js";
 
 // Import Modal
 import ModalComments from "../components/home/modalcmt.js";
@@ -30,15 +31,19 @@ import { getToken } from "../utils/processStore.js";
 import { playSoundFromLocalFile, setAudioMode } from "../utils/soundMessage.js";
 import ChangePassword from "./ChangePassword/ChangePassword.js";
 import ForgotPassword from "./ForgotPassword/ForgotPassword.js";
+import { getFriends } from "../api/userApi.js";
+import { setFriends, setNewFriends } from "../redux/user.js";
 
 const Stack = createNativeStackNavigator();
 export const Layout = () => {
   const isAuthenticated = useSelector(
-    (state) => state.userState.isAuthenticated
+    (state) => state.userState?.isAuthenticated
   );
   const userLoggedId = useSelector((state) => state.userState?.user?._id);
   const [userId, setUserId] = useState(null);
   const [accessToken, setAccessToken] = useState("");
+
+  const dispatch = useDispatch();
   const toast = useToast();
   const toastRef = useRef(null);
   const handlePlayNotiMessage = async () => {
@@ -93,7 +98,10 @@ export const Layout = () => {
         }
       });
       socket.on("notification", (notice) => {
-        if (notice.action.receiver._id.toString() === userId.toString()) {
+        if (
+          notice.action.receiver._id.toString() === userId.toString() &&
+          notice.action.sender._id.toString() !== userId.toString()
+        ) {
           let content = notice.action.content;
           handlePlayNotiMessage();
           if (toast) {
@@ -108,11 +116,24 @@ export const Layout = () => {
           }
         }
       });
+      socket.on("setFriend", () => {
+        console.log("handle SetFriend");
+        const again = async () => {
+          const req = await getFriends();
+
+          if (req && req.success) {
+            console.log({ data: req.friends });
+            dispatch(setNewFriends(req));
+          }
+        };
+        again();
+      });
     }
     return () => {
       console.log("Disconnected");
       socket.off("receiveMessage");
       socket.off("notification");
+      socket.off("setFriend");
       socket.disconnect();
     };
   }, [userId]);
@@ -277,6 +298,17 @@ export const Layout = () => {
                 }}
               />
             </Stack.Group>
+            <Stack.Screen
+              name="LikeScreen"
+              component={LikeScreen}
+              options={{
+                headerTitleAlign: "center",
+                navigationBarHidden: true,
+                headerLeft: () => <LeftHeader screen="friend" />,
+                title: "Lượt thích",
+                headerShown: true,
+              }}
+            />
             <Stack.Group screenOptions={{ presentation: "modal" }}>
               <Stack.Screen
                 name="ModalComments"

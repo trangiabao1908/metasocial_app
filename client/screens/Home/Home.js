@@ -1,34 +1,39 @@
 import {
-  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  StatusBar,
+  Text,
   FlatList,
   RefreshControl,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+  ActivityIndicator,
 } from "react-native";
 
-import { useEffect, useRef, useState } from "react";
-import { EventRegister } from "react-native-event-listeners";
-import { useDispatch, useSelector } from "react-redux";
-import { getAllPostApi } from "../../api/postApi";
-import PostSkeleton from "../../components/custom/skeleton";
-import Footer from "../../components/footer";
+import Header from "../../components/home/header";
 import Post from "../../components/home/post";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import Footer from "../../components/footer";
 import ListStories from "../../components/stories";
+import { getAllPostApi } from "../../api/postApi";
+import ImageCustom from "../../components/custom/imageCustom";
+import { useDispatch, useSelector } from "react-redux";
 import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
+import { EventRegister } from "react-native-event-listeners";
+import PostSkeleton from "../../components/custom/skeleton";
+import { getImageFromCache } from "../../utils/caching";
+import socket from "../../utils/configSocket";
+import Icon from "react-native-vector-icons/Entypo";
 
 // import { ref, listAll, getDownloadURL } from "firebase/storage";
 // import { storage } from "../../firebase/config";
 
-// const storiesData = [
-//   {
-//     id: 1,
-//     name: "tptp.here",
-//     source: require("../../assets/icon_avatar.png"),
-//   },
-// ];
+const storiesData = [
+  {
+    id: 1,
+    name: "tptp.here",
+    source: require("../../assets/icon_avatar.png"),
+  },
+];
 
 const HeaderContent = () => {
   const renderListStories = ({ item }) => {
@@ -40,21 +45,33 @@ const HeaderContent = () => {
         borderBottomColor: "rgb(219, 219, 219)",
         borderBottomWidth: 0.5,
       }}
-    ></SafeAreaView>
+    >
+      <FlatList
+        data={storiesData}
+        renderItem={renderListStories}
+        keyExtractor={(item) => item.id}
+        horizontal
+        initialScrollIndex={0}
+        showsHorizontalScrollIndicator={false}
+      />
+    </SafeAreaView>
   );
 };
 
 const Home = ({ navigation, route }) => {
   const dispatch = useDispatch();
-  const postData = useSelector((state) => state?.postState?.post);
-  const user = useSelector((state) => state?.userState?.user?._id);
+  const postData = useSelector((state) => state.postState?.post);
+  const user = useSelector((state) => state.userState?.user?._id);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [updatedAt, setUpdatedAt] = useState("");
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimer = useRef(null);
 
   const flatListRef = useRef();
+  const videoRef = useRef(null);
 
   useEffect(() => {
     setTimeout(onRefresh, 200);
@@ -75,31 +92,22 @@ const Home = ({ navigation, route }) => {
     };
   }, []);
 
-  // useEffect(() => {
+  useEffect(() => {
+    if (clickCount === 1) {
+      clickTimer.current = setTimeout(() => {
+        handleScrollToTop();
+        setClickCount(0);
+      }, 200);
+    } else if (clickCount === 2) {
+      clearTimeout(clickTimer.current);
 
-  //   if (isScrollToTop) {
-  //     scrollToTop();
-  //   }
-  // }, [isScrollToTop, route]);
-
-  // const getAllPosts = async () => {
-  //   try {
-  //     let query = "";
-  //     const req = await getAllPostApi(query);
-  //     if (req.success) {
-  //       if (req.posts.length > 0) {
-  //         const latedPost = req.posts[req.posts.length - 1];
-  //         setUpdatedAt(latedPost.updatedAt);
-  //         setIsEmpty(false);
-  //         setIsFirstTime(false);
-
-  //         dispatch(getAllPostSuccess(req.posts));
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+      onRefresh();
+      setClickCount(0);
+    }
+    return () => {
+      clearTimeout(clickTimer.current);
+    };
+  }, [clickCount]);
 
   const loadMoreData = async () => {
     console.log("Load more data");
@@ -126,7 +134,7 @@ const Home = ({ navigation, route }) => {
   };
 
   const handleRefreshing = async () => {
-    console.log("Call API Refreshing");
+    // console.log("Call API Refreshing");
     try {
       let query = "";
       dispatch(clearPost());
@@ -152,10 +160,12 @@ const Home = ({ navigation, route }) => {
     }
   };
 
-  const scrollToTop = () => {
-    setTimeout(() => {
-      flatListRef.current.scrollToIndex({ animated: true, index: 0 });
-    }, 200);
+  const handleScrollToTop = () => {
+    if (flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToIndex({ animated: true, index: 0 });
+      }, 200);
+    }
   };
 
   const onRefresh = () => {
@@ -175,6 +185,13 @@ const Home = ({ navigation, route }) => {
     }
   };
 
+  const handleClick = () => {
+    setClickCount((prevCount) => prevCount + 1);
+    if (clickTimer.current !== null) {
+      clearTimeout(clickTimer.current);
+    }
+  };
+
   const renderPosts = ({ item }) => {
     let isLike = item.like?.filter((data) => data.user === user);
 
@@ -188,6 +205,7 @@ const Home = ({ navigation, route }) => {
         comment={item.comment}
         isLike={isLike.length ? true : false}
         updatedAt={item.createdAt}
+        disableComment={item.disableComment}
       />
     );
   };
@@ -214,19 +232,20 @@ const Home = ({ navigation, route }) => {
                 isEmpty ? (
                   <View
                     style={{
-                      backgroundColor: "red",
+                      backgroundColor: "#e0e0e0",
+                      padding: 20,
                       display: "flex",
                       justifyContent: "center",
-                      flexDirection: "column",
+                      flexDirection: "row",
                       alignItems: "center",
                     }}
                   >
-                    <View>
-                      <Text>There is no feed for you!</Text>
-                    </View>
-                    <View>
-                      <Text>There is no feed for you!</Text>
-                    </View>
+                    <Icon
+                      name="emoji-sad"
+                      size={20}
+                      style={{ marginRight: 5 }}
+                    />
+                    <Text>Opps! Bạn đã đọc hết rồi!</Text>
                   </View>
                 ) : (
                   <ActivityIndicator size="small" />
@@ -241,7 +260,11 @@ const Home = ({ navigation, route }) => {
       </View>
       {!refreshing && (
         <SafeAreaView style={style.footer}>
-          <Footer navigation={navigation} isActive={0} />
+          <Footer
+            navigation={navigation}
+            isActive={0}
+            handleClick={handleClick}
+          />
         </SafeAreaView>
       )}
     </SafeAreaView>

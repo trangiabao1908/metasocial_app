@@ -8,12 +8,21 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import React, { useLayoutEffect } from "react";
 
-import { useRef, useEffect, useState } from "react";
+import {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import Footer from "../../components/footer";
 import Post from "../../components/detail/post";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { EventRegister } from "react-native-event-listeners";
 import { getPostByUserIdApi } from "../../api/postApi";
@@ -21,10 +30,13 @@ import Icon from "react-native-vector-icons/AntDesign";
 
 const DetailPost = () => {
   const route = useRoute();
-  const data = route.params.dataPersonal;
-  const userID = useSelector((state) => state?.userState?.user?._id);
+  const data = route?.params?.dataPersonal;
+  const index = route?.params?.index;
+  const userID = useSelector((state) => state.userState?.user?._id);
   const navigation = useNavigation();
   const [postData, setPostData] = useState();
+  const flatListRef = useRef(null);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -60,6 +72,7 @@ const DetailPost = () => {
 
   useEffect(() => {
     getDataPersonal();
+
     const eventListener = () => {
       EventRegister.addEventListener("onSuccessUpdatePost", getDataPersonal);
     };
@@ -68,6 +81,22 @@ const DetailPost = () => {
       EventRegister.removeEventListener("onSuccessUpdatePost", getDataPersonal);
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (
+        !hasScrolled &&
+        postData?.length > 0 &&
+        index >= 0 &&
+        index < postData?.length
+      ) {
+        setTimeout(() => {
+          setHasScrolled(true);
+          scrollToIndex();
+        }, 200);
+      }
+    }, [postData, hasScrolled])
+  );
 
   const getDataPersonal = async () => {
     let type = "viewProfile";
@@ -78,9 +107,15 @@ const DetailPost = () => {
     }
   };
 
-  const renderPosts = ({ item }) => {
+  const scrollToIndex = () => {
+    flatListRef.current.scrollToIndex({
+      index: index,
+      animated: true,
+    });
+  };
+
+  const renderPosts = ({ item, index }) => {
     let isLike = item.like?.filter((data) => data.user === userID);
-    console.log(item.title);
 
     return (
       <Post
@@ -92,6 +127,7 @@ const DetailPost = () => {
         comment={item.comment}
         isLike={isLike.length ? true : false}
         updatedAt={item.createdAt}
+        disableComment={item.disableComment}
       />
     );
   };
@@ -108,6 +144,7 @@ const DetailPost = () => {
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={16}
             onEndReachedThreshold={0.1}
+            ref={flatListRef}
           />
         </SafeAreaView>
       </View>

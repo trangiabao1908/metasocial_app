@@ -224,6 +224,14 @@ const userController = {
         picturePath: NeedacceptFriend?.picturePath || "",
         email: NeedacceptFriend?.email,
       };
+
+      if (acceptFriendId) {
+        const socketID = sessionsMap[acceptFriendId];
+        console.log(socketID);
+
+        io.to(socketID).emit("setFriend");
+      }
+
       return res.status(200).json({
         success: true,
         message: "Xác nhận kết bạn thành công",

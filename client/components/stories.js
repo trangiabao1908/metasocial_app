@@ -13,7 +13,6 @@ const ListStories = ({ source, name, id }) => {
             style={{ width: 50, height: 50 }}
             resizeMode="cover"
             type="avatar"
-            // source={{ uri: "../assets/icon_avatar.png" }}
             source={source}
           />
         </View>
@@ -21,6 +20,39 @@ const ListStories = ({ source, name, id }) => {
       </View>
       <View style={{ width: 10 }}></View>
 
+      <View style={stories.flexItem}>
+        <View style={stories.content2}>
+          <ImageCustom
+            style={{ width: 70, height: 70 }}
+            resizeMode="cover"
+            source={source}
+            type="avatar"
+          />
+        </View>
+        <Text style={stories.center}>{name}</Text>
+      </View>
+      <View style={stories.flexItem}>
+        <View style={stories.content2}>
+          <ImageCustom
+            style={{ width: 70, height: 70 }}
+            resizeMode="cover"
+            source={source}
+            type="avatar"
+          />
+        </View>
+        <Text style={stories.center}>{name}</Text>
+      </View>
+      <View style={stories.flexItem}>
+        <View style={stories.content2}>
+          <ImageCustom
+            style={{ width: 70, height: 70 }}
+            resizeMode="cover"
+            source={source}
+            type="avatar"
+          />
+        </View>
+        <Text style={stories.center}>{name}</Text>
+      </View>
       <View style={stories.flexItem}>
         <View style={stories.content2}>
           <ImageCustom
@@ -49,12 +81,12 @@ const stories = StyleSheet.create({
   content2: {
     display: "flex",
     justifyContent: "center",
-    height: 80,
-    width: 80,
+    height: 75,
+    width: 75,
     alignItems: "center",
     borderRadius: 360,
-    borderColor: "black",
-    borderWidth: 4,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
   },
   flexItem: {
     display: "flex",

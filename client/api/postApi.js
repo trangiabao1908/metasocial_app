@@ -217,12 +217,6 @@ export const delReplyCommentApi = async (req) => {
   const { postID, commentID, replyID } = req;
   const headers = await config();
 
-  console.log({
-    postID,
-    commentID,
-    replyID,
-  });
-
   try {
     const { data } = await API.delete(
       `post/comment/reply/delete/${postID}?commentID=${commentID}&replyID=${replyID}`,
@@ -230,6 +224,37 @@ export const delReplyCommentApi = async (req) => {
         headers,
       }
     );
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const hideCommentApi = async (postID, disableComment) => {
+  const headers = await config();
+  console.log({ postID, disableComment });
+
+  try {
+    const { data } = await API.put(
+      `post/comment/hide/${postID}`,
+      { disableComment },
+      {
+        headers,
+      }
+    );
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const getLikeListApi = async (postID) => {
+  const headers = await config();
+
+  try {
+    const { data } = await API.get(`post/like/list/${postID}`, {
+      headers,
+    });
     return data;
   } catch (err) {
     console.log(err);

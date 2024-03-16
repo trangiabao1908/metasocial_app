@@ -9,6 +9,7 @@ export interface IPost {
   video?: string;
   like?: mongoose.Types.DocumentArray<ILike>;
   comment?: mongoose.Types.DocumentArray<IComment>;
+  disableComment: boolean;
 }
 
 interface IComment {
@@ -62,6 +63,7 @@ const postSchema = new mongoose.Schema<IPost>(
         _id: { type: mongoose.Types.ObjectId },
       },
     ],
+    disableComment: { type: Boolean, default: false },
   },
   {
     timestamps: true,

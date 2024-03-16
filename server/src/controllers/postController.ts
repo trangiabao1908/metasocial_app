@@ -12,6 +12,7 @@ import {
   likeNotification,
   replyNotification,
 } from "../utils/notifications";
+import Notification from "../models/Notification";
 // import User from "../models/User";
 
 const postController = {
@@ -71,7 +72,7 @@ const postController = {
         .limit(limitPost + 1)
         .populate({ path: "author", select: "_id" })
         .select("assets _id author updatedAt")
-        .sort({ updatedAt: "desc" })
+        .sort({ createdAt: "desc" })
         .exec();
 
       let isLastElement = false;
@@ -120,7 +121,7 @@ const postController = {
       const user = await User.findById(id);
 
       const posts = await Post.find({ author: id })
-        .sort({ updatedAt: -1 })
+        .sort({ createdAt: -1 })
         .populate("author", ["_id", "username", "picturePath"]);
 
       // const idAuthor = posts[0].author._id.toString();
@@ -143,7 +144,7 @@ const postController = {
       const userId = req.user.userId;
       const user = await User.findById(req.user.userId);
       const posts = await Post.find({ author: userId })
-        .sort({ updatedAt: -1 })
+        .sort({ createdAt: -1 })
         .populate("author", ["_id", "username", "picturePath"]);
 
       return res.status(200).json({
@@ -234,6 +235,11 @@ const postController = {
       console.log("DELETE_POST");
 
       const postDeleted = await handlePost.deletePost(deleteCondition);
+
+      //Delete Notifications
+      await Notification.deleteMany({
+        post: id,
+      });
 
       if (postDeleted) {
         return res.status(200).json({
@@ -618,6 +624,70 @@ const postController = {
       return res.status(200).json({
         status: true,
         data: post,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "Fail",
+        message: error.message,
+      });
+    }
+  },
+  hideComment: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.userId;
+      const { disableComment } = req.body;
+
+      const post = await handlePost.getPostByID(id);
+
+      if (!post) {
+        return res.status(404).json({
+          status: false,
+          message: "Bài đăng không tồn tại",
+        });
+      }
+      console.log({ author: post?.author._id, user: userId });
+
+      if (post?.author._id.toString() === userId) {
+        const updatedPost = await Post.findByIdAndUpdate(
+          id,
+          { disableComment: disableComment },
+          { new: true }
+        );
+
+        return res.status(200).json({
+          status: true,
+          data: updatedPost,
+          disableComment: disableComment,
+        });
+      }
+
+      return res.status(403).json({
+        status: false,
+        message: "Bạn không có quyền cập nhật bài đăng này",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "Fail",
+        message: error.message,
+      });
+    }
+  },
+
+  getLikeList: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const list = await Post.findById(id).populate({
+        path: "like.user",
+        select: "username _id picturePath displayName",
+      });
+
+      console.log(list?.like);
+
+      return res.status(200).json({
+        status: true,
+        list: list?.like,
       });
     } catch (error) {
       return res.status(500).json({

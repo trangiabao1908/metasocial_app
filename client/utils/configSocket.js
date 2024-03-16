@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-const socket = io("https://metasocial-app.onrender.com:443", {
+const socket = io("http://192.168.1.11:443", {
   transports: ["websocket", "polling"],
   withCredentials: true,
 });

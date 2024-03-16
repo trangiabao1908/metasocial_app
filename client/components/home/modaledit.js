@@ -6,8 +6,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Icon2 from "react-native-vector-icons/Feather";
-import { deletePostApi } from "../../api/postApi";
-import { deletePostRD } from "../../redux/post";
+import { deletePostApi, hideCommentApi } from "../../api/postApi";
+import { deletePostRD, hideComment } from "../../redux/post";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { EventRegister } from "react-native-event-listeners";
@@ -17,11 +17,12 @@ const ModalEdit = ({
   handleCloseModalEdit,
   postID,
   isAuthor,
+  disableComment,
 }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const postData = useSelector((state) => state?.postState?.post);
+  const postData = useSelector((state) => state.postState?.post);
 
   const handleDeletePost = async () => {
     const del = await deletePostApi(postID);
@@ -35,7 +36,7 @@ const ModalEdit = ({
   };
 
   const getPostByID = () => {
-    const postByID = postData.filter((item) => item._id === postID);
+    const postByID = postData?.filter((item) => item._id === postID);
 
     return postByID;
   };
@@ -46,6 +47,26 @@ const ModalEdit = ({
     navigation.navigate("Post", { dataUpdate: dataUpdate, type: "update" });
 
     handleCloseModalEdit();
+  };
+
+  const handleTurnOffComment = async () => {
+    let disableComment = true;
+
+    const req = await hideCommentApi(postID, disableComment);
+    if (req.status) {
+      dispatch(hideComment({ _id: postID }));
+
+      handleCloseModalEdit();
+    }
+  };
+  const handleTurnOnComment = async () => {
+    let disableComment = false;
+
+    const req = await hideCommentApi(postID, disableComment);
+    if (req.status) {
+      dispatch(hideComment({ _id: postID }));
+      handleCloseModalEdit();
+    }
   };
 
   return (
@@ -138,18 +159,26 @@ const ModalEdit = ({
                     <Text style={styles.fontSize16}>Ẩn lượt thích</Text>
                   </View>
                 </View>
-                <View style={styles.borderWidth}>
-                  <View style={[styles.flexRow, styles.itemLeft]}>
-                    <MaterialCommunityIcons
-                      name="comment-off-outline"
-                      size={15}
-                      style={styles.icon}
-                    />
-                    <Text style={styles.fontSize16}>
-                      Tắt tính năng bình luận
-                    </Text>
+                <TouchableOpacity
+                  onPress={
+                    disableComment ? handleTurnOnComment : handleTurnOffComment
+                  }
+                >
+                  <View style={styles.borderWidth}>
+                    <View style={[styles.flexRow, styles.itemLeft]}>
+                      <MaterialCommunityIcons
+                        name="comment-off-outline"
+                        size={15}
+                        style={styles.icon}
+                      />
+                      <Text style={styles.fontSize16}>
+                        {disableComment
+                          ? `Mở tính năng bình luận`
+                          : `Tắt tính năng bình luận`}
+                      </Text>
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity
                   onPress={isAuthor ? handleOpenUpdatePost : null}
                   style={{ width: "100%" }}

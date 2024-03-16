@@ -35,11 +35,13 @@ const Paper = ({ dataPersonal }) => {
     }
   };
 
-  const handleViewAllPost = () => {
-    navigation.navigate("DetailPost", { dataPersonal });
+  const handleViewAllPost = (i) => {
+    navigation.navigate("DetailPost", { dataPersonal, index: i });
   };
 
-  const renderListImage = ({ item }) => {
+  const renderListImage = ({ item, index }) => {
+    let i = index;
+
     return (
       <View
         style={{
@@ -47,7 +49,7 @@ const Paper = ({ dataPersonal }) => {
           marginBottom: 2,
         }}
       >
-        <TouchableOpacity onPress={handleViewAllPost}>
+        <TouchableOpacity onPress={() => handleViewAllPost(i)}>
           <View
             style={{
               width: screenWidth / 3,

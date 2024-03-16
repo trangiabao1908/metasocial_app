@@ -76,6 +76,19 @@ const postState = createSlice({
       });
     },
 
+    hideComment: (state, action) => {
+      console.log({ id: action.payload });
+      state.post = state.post.map((item) => {
+        if (item._id === action.payload._id) {
+          return {
+            ...item,
+            disableComment: !item.disableComment,
+          };
+        }
+        return item;
+      });
+    },
+
     clearPost: (state) => {
       state.post = [];
     },
@@ -91,6 +104,7 @@ export const {
   createPostRD,
   likePostRD,
   loadMorePost,
+  hideComment,
 } = postState.actions;
 
 export default postState.reducer;

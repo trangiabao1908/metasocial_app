@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 import ImageCustom from "../custom/imageCustom";
 import { formatTime } from "../../utils/setTime";
 import { EventRegister } from "react-native-event-listeners";
+
 const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
   const [allComments, setAllComments] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +48,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
 
   const editRef = useRef();
 
-  const user = useSelector((state) => state?.userState?.user);
+  const user = useSelector((state) => state.userState?.user);
 
   const validationSchema = yup.object().shape({
     comment: yup.string().max(100, ({ max }) => `Giới hạn là ${max} chữ`),
@@ -247,7 +248,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
           postID={postID}
           handleDelCommentPost={() => handleDelCommentPost(item._id)}
           handleOpenEditComment={() => handleOpenEditComment(item)}
-          isAuthor={item.user._id === user._id ? true : false}
+          isAuthor={item.user._id === user?._id ? true : false}
         >
           <View
             ref={editRef}
@@ -674,7 +675,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
                         <ImageCustom
                           resizeMode="cover"
                           style={[styles.avatar]}
-                          source={{ uri: user.picturePath }}
+                          source={{ uri: user?.picturePath }}
                           type={"avatar"}
                         />
                       </View>

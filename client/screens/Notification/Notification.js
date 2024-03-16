@@ -5,6 +5,8 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useState, useEffect } from "react";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -12,101 +14,18 @@ import ImageCustom from "../../components/custom/imageCustom";
 import socket from "../../utils/configSocket";
 import { getNotificationApi } from "../../api/noticeApi";
 import { formatTime } from "../../utils/setTime";
-
-const renderNotifications = (item) => {
-  let inputString = item.content.split(" ");
-  let username = inputString[0];
-  let content = inputString.slice(1).join(" ");
-
-  return (
-    <View
-      key={item._id}
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingVertical: 10,
-      }}
-    >
-      <View
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          marginLeft: 20,
-          width: "65%",
-        }}
-      >
-        <ImageCustom
-          resizeMode="cover"
-          style={{ width: 40, height: 40 }}
-          type={"avatar"}
-          source={{
-            uri: item.sender.picturePath,
-          }}
-        />
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginLeft: 5,
-            flexWrap: "wrap",
-          }}
-        >
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginLeft: 5,
-              marginBottom: 5,
-            }}
-          >
-            <Text style={{ fontWeight: "bold" }}>
-              {username}{" "}
-              <Text
-                style={{
-                  color: "grey",
-                  fontWeight: "300",
-                  fontSize: 14,
-                }}
-              >
-                {content} {formatTime(item.createdAt)}
-              </Text>
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View
-        style={{
-          height: 50,
-          width: 50,
-          display: "flex",
-          justifyContent: "center",
-          marginRight: 20,
-        }}
-      >
-        <ImageCustom
-          source={{
-            uri: item?.post?.assets[0]?.url,
-          }}
-          resizeMode={"cover"}
-          style={{ aspectRatio: 1, borderRadius: 12 }}
-        />
-      </View>
-    </View>
-  );
-};
+import { getPostByUserIdApi } from "../../api/postApi";
+import { useNavigation } from "@react-navigation/native";
 
 const Notification = () => {
   const [noticesToday, setNoticesToday] = useState([]);
   const [noticesIn7Days, setNoticesIn7Days] = useState([]);
   const [noticesIn30Days, setNoticesIn30Days] = useState([]);
+
+  const navigation = useNavigation();
+
   useEffect(() => {
     socket.on("notification", (data) => {
-      console.log(data);
       getNotification();
     });
     return () => {
@@ -124,6 +43,122 @@ const Notification = () => {
       setNoticesToday(req.noticesToday.reverse());
     }
   };
+
+  const renderNotifications = (item) => {
+    let inputString = item.content.split(" ");
+    let username = inputString[0];
+    let content = inputString.slice(1).join(" ");
+
+    const handleGotoDetailPost = async () => {
+      const postData = await getDataPost();
+
+      postData?.map((data, index) => {
+        if (data._id === item.post._id) {
+          navigation.navigate("DetailPost", {
+            dataPersonal: postData,
+            index: index,
+          });
+          return;
+        }
+      });
+    };
+
+    const getDataPost = async () => {
+      let type = "viewProfile";
+      let id = item.post?.author;
+
+      if (id) {
+        const req = await getPostByUserIdApi(id, type);
+        if (req.success) {
+          return req.data;
+        }
+      } else {
+        Alert.alert("Người dùng đã xóa bài viết này.");
+      }
+    };
+    return (
+      <TouchableOpacity onPress={handleGotoDetailPost} key={item._id}>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingVertical: 10,
+          }}
+        >
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              marginLeft: 20,
+              width: "65%",
+            }}
+          >
+            <ImageCustom
+              resizeMode="cover"
+              style={{ width: 40, height: 40 }}
+              type={"avatar"}
+              source={{
+                uri: item.sender.picturePath,
+              }}
+            />
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                marginLeft: 5,
+                flexWrap: "wrap",
+              }}
+            >
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  marginLeft: 5,
+                  marginBottom: 5,
+                }}
+              >
+                <Text style={{ fontWeight: "bold" }}>
+                  {username}{" "}
+                  <Text
+                    style={{
+                      color: "grey",
+                      fontWeight: "300",
+                      fontSize: 14,
+                    }}
+                  >
+                    {content} {formatTime(item.createdAt)}
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={{
+              height: 50,
+              width: 50,
+              display: "flex",
+              justifyContent: "center",
+              marginRight: 20,
+            }}
+          >
+            <ImageCustom
+              source={{
+                uri: item.post?.assets[0].url,
+              }}
+              resizeMode={"cover"}
+              style={{ aspectRatio: 1, borderRadius: 12 }}
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {
@@ -140,7 +175,9 @@ const Notification = () => {
                   Mới nhất
                 </Text>
               </View>
-              {noticesToday.map((item) => renderNotifications(item))}
+              {noticesToday.map((item, index) =>
+                renderNotifications(item, index)
+              )}
             </View>
           )}
           {noticesIn7Days.length > 0 && (
@@ -158,7 +195,9 @@ const Notification = () => {
                   7 ngày qua
                 </Text>
               </View>
-              {noticesIn7Days.map((item) => renderNotifications(item))}
+              {noticesIn7Days.map((item, index) =>
+                renderNotifications(item, index)
+              )}
             </View>
           )}
           {noticesIn30Days.length > 0 && (
@@ -175,7 +214,9 @@ const Notification = () => {
                   30 ngày qua
                 </Text>
               </View>
-              {noticesIn30Days.map((item) => renderNotifications(item))}
+              {noticesIn30Days.map((item, index) =>
+                renderNotifications(item, index)
+              )}
             </View>
           )}
           {noticesToday.length === 0 &&

@@ -52,7 +52,7 @@ const ModalComments = ({
 
   const editRef = useRef();
 
-  const user = useSelector((state) => state?.userState?.user);
+  const user = useSelector((state) => state.userState?.user);
 
   const validationSchema = yup.object().shape({
     comment: yup.string().max(100, ({ max }) => `Giới hạn là ${max} chữ`),
@@ -245,7 +245,7 @@ const ModalComments = ({
           handleDelCommentPost={() => handleDelCommentPost(item._id)}
           handleOpenEditComment={() => handleOpenEditComment(item)}
           index={index}
-          isAuthor={item.user._id === user._id ? true : false}
+          isAuthor={item.user._id === user?._id ? true : false}
         >
           <View
             ref={editRef}
@@ -672,7 +672,7 @@ const ModalComments = ({
                         <ImageCustom
                           resizeMode="cover"
                           style={[styles.avatar]}
-                          source={{ uri: user.picturePath }}
+                          source={{ uri: user?.picturePath }}
                           type={"avatar"}
                         />
                       </View>

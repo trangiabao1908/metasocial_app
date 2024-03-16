@@ -129,11 +129,14 @@ const Search = () => {
     }
   };
 
-  const renderListImage = ({ item }) => {
+  const renderListImage = ({ item, index }) => {
     const handleGotoDetailPost = async () => {
       const postData = await getDataPost();
 
-      navigation.navigate("DetailPost", { dataPersonal: postData });
+      navigation.navigate("DetailPost", {
+        dataPersonal: postData,
+        index: index,
+      });
     };
     const getDataPost = async () => {
       let type = "viewProfile";
@@ -151,7 +154,6 @@ const Search = () => {
           style={{
             flexDirection: "row",
             marginBottom: 2,
-            // marginRight: ,
           }}
         >
           <View
@@ -264,7 +266,6 @@ const Search = () => {
           q={q}
           setQ={setQ}
           isSearch={isSearch}
-          // debounceValue={debounceValue}
           setIsSearch={setIsSearch}
         />
       </View>
@@ -281,7 +282,6 @@ const Search = () => {
                   style={{
                     marginHorizontal: 20,
                     paddingVertical: 10,
-
                     display: "flex",
                     flexDirection: "row",
                     alignItems: "center",

@@ -1,17 +1,21 @@
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Platform } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
-import Icon3 from "react-native-vector-icons/Entypo";
 import Icon2 from "react-native-vector-icons/Feather";
+import Icon3 from "react-native-vector-icons/Entypo";
 import Icon4 from "react-native-vector-icons/FontAwesome";
-
-import { SafeAreaView } from "react-native-safe-area-context";
+import Icon5 from "react-native-vector-icons/Ionicons";
 import { useSelector } from "react-redux";
+import { useState } from "react";
 import ImageCustom from "./custom/imageCustom";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const Footer = ({ navigation, isActive }) => {
-  const user = useSelector((state) => state?.userState?.user);
+const Footer = ({
+  navigation,
+  isActive,
 
-  // const [isActive, setIsActive] = useState(0);
+  handleClick,
+}) => {
+  const user = useSelector((state) => state?.userState.user);
 
   return (
     <SafeAreaView
@@ -24,6 +28,7 @@ const Footer = ({ navigation, isActive }) => {
           size={25}
           color="#000"
           backgroundColor="#ffffff"
+          onPress={handleClick}
           iconStyle={{
             marginRight: 0,
           }}
@@ -50,7 +55,6 @@ const Footer = ({ navigation, isActive }) => {
           backgroundColor="#ffffff"
           iconStyle={{
             marginRight: 0,
-            // fontWeight: "bold",
           }}
           onPress={() => navigation.navigate("Search")}
         />
@@ -93,7 +97,6 @@ const Footer = ({ navigation, isActive }) => {
         <View>
           <View
             style={{
-              // padding: 10,
               borderColor: isActive === 4 ? "black" : "#EAEAEA",
               borderWidth: isActive === 4 ? 2 : 1,
               borderRadius: 360,
@@ -109,7 +112,7 @@ const Footer = ({ navigation, isActive }) => {
               resizeMode="cover"
               type="avatar"
               source={{
-                uri: user.picturePath,
+                uri: user?.picturePath,
               }}
             />
           </View>

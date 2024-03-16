@@ -68,6 +68,7 @@ const Post = ({
   id,
   isLike,
   updatedAt,
+  disableComment,
 }) => {
   const navigate = useNavigation();
 
@@ -78,7 +79,7 @@ const Post = ({
 
   const dispatch = useDispatch();
 
-  const userID = useSelector((state) => state?.userState?.user?._id);
+  const userID = useSelector((state) => state.userState?.user?._id);
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -170,6 +171,7 @@ const Post = ({
                 useNativeControls
                 resizeMode="cover"
                 shouldPlay={false}
+
                 // onPlaybackStatusUpdate={onPlaybackStatusUpdate}
               />
             </View>
@@ -230,22 +232,34 @@ const Post = ({
           </View>
         </View>
         <View style={posts.comment}>
-          <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
-            {like.length} lượt thích
-          </Text>
+          <TouchableOpacity
+            onPress={() => navigate.navigate("LikeScreen", { id })}
+          >
+            <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+              {like.length} lượt thích
+            </Text>
+          </TouchableOpacity>
           <View style={{ display: "flex", flexDirection: "row" }}>
             <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
               {author.username}
             </Text>
             <Text style={{ marginBottom: 5 }}>{title}</Text>
           </View>
-          <TouchableOpacity onPress={handleOpenModal}>
+          {disableComment ? (
             <View>
               <Text style={{ color: "grey" }}>
-                Xem tất cả {lengthComments} bình luận
+                Tính năng bình luận đã bị tắt.
               </Text>
             </View>
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleOpenModal}>
+              <View>
+                <Text style={{ color: "grey" }}>
+                  Xem tất cả {comment.length} bình luận
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {/* </View> */}
@@ -257,6 +271,7 @@ const Post = ({
         lengthComments={lengthComments}
       />
       <ModalEdit
+        disableComment={disableComment}
         postID={id}
         modalEditVisible={modalEditVisible}
         handleCloseModalEdit={handleCloseModalEdit}

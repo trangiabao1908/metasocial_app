@@ -31,9 +31,12 @@ export const userSlice = createSlice({
         picturePath: action.payload.picturePath,
       };
     },
+    setNewFriends: (state, action) => {
+      state.user.friends = action.payload.friends;
+    },
   },
 });
 
-export const { setLogin, setLogout, updatedUser, setFriends } =
+export const { setLogin, setLogout, updatedUser, setFriends, setNewFriends } =
   userSlice.actions;
 export default userSlice.reducer;

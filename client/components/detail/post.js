@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   Text,
-  Image,
   Dimensions,
   TouchableOpacity,
 } from "react-native";
@@ -50,16 +49,18 @@ const Post = ({
   comment,
   id,
   isLike,
+  disableComment,
   updatedAt,
 }) => {
   const navigate = useNavigation();
+  // const [itemHeight, setItemHeight] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalEditVisible, setModalEditVisible] = useState(false);
 
   const dispatch = useDispatch();
 
-  const userID = useSelector((state) => state?.userState?.user?._id);
+  const userID = useSelector((state) => state.userState?.user?._id);
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -221,13 +222,21 @@ const Post = ({
             </Text>
             <Text style={{ marginBottom: 5 }}>{title}</Text>
           </View>
-          <TouchableOpacity onPress={handleOpenModal}>
+          {disableComment ? (
             <View>
               <Text style={{ color: "grey" }}>
-                Xem tất cả {comment.length} bình luận
+                Tính năng bình luận đã bị tắt.
               </Text>
             </View>
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleOpenModal}>
+              <View>
+                <Text style={{ color: "grey" }}>
+                  Xem tất cả {comment.length} bình luận
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {/* </View> */}
@@ -237,6 +246,7 @@ const Post = ({
         handleCloseModal={handleCloseModal}
       />
       <ModalEdit
+        disableComment={disableComment}
         postID={id}
         modalEditVisible={modalEditVisible}
         handleCloseModalEdit={handleCloseModalEdit}
