@@ -31,7 +31,11 @@ router.post(
   middlewareAuth.verifyToken,
   userController.requestFriends
 );
-
+router.put(
+  "/unfriend-request",
+  middlewareAuth.verifyToken,
+  userController.removeFriend
+);
 // GET FRIEND REQUEST, method: GET//
 router.get(
   "/friend-request/:userId",

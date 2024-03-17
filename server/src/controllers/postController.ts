@@ -27,7 +27,7 @@ const postController = {
         query = { updatedAt: { $lt: updatedAt } };
       }
 
-      const limitPost = 3;
+      const limitPost = 10;
 
       const posts = await Post.find(query)
         .limit(limitPost + 1)
@@ -380,47 +380,53 @@ const postController = {
         "username picturePath _id"
       );
       const post = await handlePost.getPostByID(id);
-      const userReceiver = await User.findById(post?.author._id).select(
-        "username picturePath _id"
-      );
+      if (!post?.disableComment) {
+        const userReceiver = await User.findById(post?.author._id).select(
+          "username picturePath _id"
+        );
 
-      const receiverSocketID = sessionsMap[userReceiver?._id];
+        const receiverSocketID = sessionsMap[userReceiver?._id];
 
-      if (
-        userSender &&
-        userReceiver &&
-        userReceiver._id.toString() !== userSender._id.toString()
-      ) {
-        const action = {
-          sender: userSender,
-          receiver: userReceiver,
-          type: "comment",
-          content: `${userSender?.username} đã bình luận về bài viết của bạn`,
-          post: post,
-        };
-        console.log({ action });
+        if (
+          userSender &&
+          userReceiver &&
+          userReceiver._id.toString() !== userSender._id.toString()
+        ) {
+          const action = {
+            sender: userSender,
+            receiver: userReceiver,
+            type: "comment",
+            content: `${userSender?.username} đã bình luận về bài viết của bạn`,
+            post: post,
+          };
+          console.log({ action });
 
-        commentNotification(action);
-        io.to(receiverSocketID).emit("notification", {
-          action: action,
+          commentNotification(action);
+          io.to(receiverSocketID).emit("notification", {
+            action: action,
+          });
+        }
+
+        if (comment) {
+          post?.comment?.push({
+            user: userId,
+            comment: comment,
+            time: currentTime,
+            reply: [],
+            _id: objectId,
+          });
+        }
+        post?.save();
+        return res.status(200).json({
+          status: true,
+          data: post,
+        });
+      } else {
+        return res.status(404).json({
+          status: false,
+          message: "Người đăng đã tắt chức năng bình luận",
         });
       }
-
-      if (comment) {
-        post?.comment?.push({
-          user: userId,
-          comment: comment,
-          time: currentTime,
-          reply: [],
-          _id: objectId,
-        });
-      }
-      post?.save();
-
-      return res.status(200).json({
-        status: true,
-        data: post,
-      });
     } catch (error) {
       return res.status(500).json({
         status: "Fail",
@@ -504,53 +510,55 @@ const postController = {
       const objectId = new ObjectId();
       const { comment, tag } = req.body;
       const post = await handlePost.getPostByID(id);
+      if (!post?.disableComment) {
+        const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+        const user = await User.findById(userId).select(
+          "username picturePath _id"
+        );
+        const tagUser = await User.findById(tag).select(
+          "username picturePath _id"
+        );
+        const receiverSocketID = sessionsMap[tagUser?._id];
+        if (tagUser && user && user._id.toString() !== tagUser._id.toString()) {
+          const action = {
+            sender: user,
+            receiver: tagUser,
+            type: "reply",
+            content: `${user?.username} đã trả lời bình luận của bạn.`,
+            post: post,
+          };
+          replyNotification(action);
+          io.to(receiverSocketID).emit("notification", {
+            action: action,
+          });
+        }
 
-      const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-
-      const user = await User.findById(userId).select(
-        "username picturePath _id"
-      );
-
-      const tagUser = await User.findById(tag).select(
-        "username picturePath _id"
-      );
-
-      const receiverSocketID = sessionsMap[tagUser?._id];
-
-      if (tagUser && user && user._id.toString() !== tagUser._id.toString()) {
-        const action = {
-          sender: user,
-          receiver: tagUser,
-          type: "reply",
-          content: `${user?.username} đã trả lời bình luận của bạn.`,
-          post: post,
+        let dataComment = {
+          comment: comment,
+          time: currentTime,
+          _id: objectId,
+          user: user,
+          tag: tagUser,
         };
-        replyNotification(action);
-        io.to(receiverSocketID).emit("notification", {
-          action: action,
+
+        post?.comment?.map((item) => {
+          if (item._id.toString() === commentID) {
+            item.reply?.push(dataComment);
+          }
+        });
+        post?.save();
+
+        return res.status(200).json({
+          status: true,
+          data: post,
+          tagUser: tagUser,
+        });
+      } else {
+        return res.status(404).json({
+          status: false,
+          message: "Người đăng đã tắt chức năng bình luận",
         });
       }
-
-      let dataComment = {
-        comment: comment,
-        time: currentTime,
-        _id: objectId,
-        user: user,
-        tag: tagUser,
-      };
-
-      post?.comment?.map((item) => {
-        if (item._id.toString() === commentID) {
-          item.reply?.push(dataComment);
-        }
-      });
-      post?.save();
-
-      return res.status(200).json({
-        status: true,
-        data: post,
-        tagUser: tagUser,
-      });
     } catch (error) {
       return res.status(500).json({
         status: "Fail",
@@ -677,18 +685,59 @@ const postController = {
   getLikeList: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      // const userId = req.user.userId;
 
-      const list = await Post.findById(id).populate({
+      // const user = await User.findById(userId).select(
+      //   "sentFriendRequests friendRequests"
+      // );
+
+      const list = await Post.findById(id).select("_id author like").populate({
         path: "like.user",
         select: "username _id picturePath displayName",
       });
-
-      console.log(list?.like);
+      // .select("_id author like");
+      // console.log(list);
 
       return res.status(200).json({
         status: true,
         list: list?.like,
       });
+    } catch (error) {
+      return res.status(500).json({
+        status: "Fail",
+        message: error.message,
+      });
+    }
+  },
+  searchUserLike: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const searchQuery: string | undefined =
+        typeof req.query["q"] === "string" ? req.query["q"] : undefined;
+
+      if (searchQuery) {
+        const search = await Post.findById(id)
+          .populate({
+            path: "like.user",
+            match: {
+              username: { $exists: true, $regex: searchQuery, $options: "i" },
+            },
+            select: "_id username picturePath",
+          })
+          .exec();
+        const results = search?.like?.filter((item) => item.user !== null);
+
+        return res.status(200).json({
+          status: true,
+          results: results,
+        });
+      } else {
+        return res.status(200).json({
+          status: true,
+          message: "Không tìm thấy người dùng.",
+        });
+      }
     } catch (error) {
       return res.status(500).json({
         status: "Fail",

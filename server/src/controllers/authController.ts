@@ -24,10 +24,11 @@ const authController = {
     const { email, password } = req.body;
 
     try {
-      const existingUser = await User.findOne({ email: email }).populate(
-        "friends",
-        ["username", "picturePath", "email"]
-      );
+      const existingUser = await User.findOne({ email: email }).populate({
+        path: "friends",
+        select: ["username", "email", "picturePath"],
+        options: { sort: { updatedAt: -1 } },
+      });
       if (!existingUser) {
         return res
           .status(404)

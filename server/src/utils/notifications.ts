@@ -19,3 +19,11 @@ export const commentNotification = async (action: any) => {
 export const replyNotification = async (action: any) => {
   await Notification.create(action);
 };
+
+export const requestFriendNotification = async (action: any) => {
+  await Notification.create(action);
+};
+
+export const acceptFriendNotification = async (action: any) => {
+  await Notification.create(action);
+};

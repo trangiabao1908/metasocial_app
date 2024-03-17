@@ -241,7 +241,7 @@ const Search = () => {
                   marginLeft: 5,
                 }}
               >
-                <Text style={{ fontWeight: "bold" }}>{item.username}</Text>
+                <Text style={{ fontWeight: "bold" }}>{item?.username}</Text>
               </View>
               <View
                 style={{
@@ -250,7 +250,7 @@ const Search = () => {
                 }}
               >
                 <Text style={{ fontWeight: 400, color: "grey" }}>
-                  {item?.displayName} <Icon name="dot-single" /> Bạn bè
+                  {item?.displayName}
                 </Text>
               </View>
             </View>

@@ -3,8 +3,11 @@ import { io, sessionsMap } from "../index";
 import { Chat } from "../models/Chat";
 import Message from "../models/Message";
 import User from "../models/User";
+import {
+  acceptFriendNotification,
+  requestFriendNotification,
+} from "../utils/notifications";
 import { decryptMessage, encryptMessage } from "../utils/processMessage";
-
 const userController = {
   // Get All User //
   getAllUser: async (_req: Request, res: Response) => {
@@ -150,6 +153,25 @@ const userController = {
           { $push: { sentFriendRequests: selectedUserId } },
           { new: true }
         );
+        const receiverSocketID = sessionsMap[selectedUser._id];
+
+        const action = {
+          sender: userLogged,
+          receiver: selectedUser,
+          type: "requestFriend",
+          content: `${userLogged?.username} đã gửi lời mời kết bạn.`,
+        };
+        if (
+          userLogged &&
+          selectedUser &&
+          userLogged._id.toString() !== selectedUser._id.toString()
+        ) {
+          requestFriendNotification(action);
+        }
+
+        io.to(receiverSocketID).emit("notification", {
+          action: action,
+        });
         return res.status(200).json({
           success: true,
           message: "Gửi yêu cầu thêm bạn thành công",
@@ -231,12 +253,69 @@ const userController = {
           : acceptFriendId;
         io.to(socketFriendID).emit("setFriend", acceptFriendId);
       }
+      const receiverSocketID = sessionsMap[NeedacceptFriend?._id];
 
+      const action = {
+        sender: userLogged,
+        receiver: NeedacceptFriend,
+        type: "acceptFriend",
+        content: `${userLogged?.username} đã chấp nhận lời mời kết bạn.`,
+      };
+      if (
+        userLogged &&
+        NeedacceptFriend &&
+        userLogged._id.toString() !== NeedacceptFriend?._id.toString()
+      ) {
+        acceptFriendNotification(action);
+      }
+
+      io.to(receiverSocketID).emit("notification", {
+        action: action,
+      });
       return res.status(200).json({
         success: true,
         message: "Xác nhận kết bạn thành công",
         data: NeedacceptFriendFormatted,
       });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  },
+
+  // Remove friend //
+  removeFriend: async (req: Request, res: Response) => {
+    try {
+      const userLoggedId = req?.user?.userId;
+      const { selectedUserId } = req.body;
+      const findUserLoggedId = await User.findById(userLoggedId)
+        .select("friends")
+        .sort({ createdAt: -1 });
+      const findUserSelectedId = await User.findById(selectedUserId)
+        .select("friends")
+        .sort({ createdAt: -1 });
+      const userSelectedFriend = findUserSelectedId?.friends;
+      const userLoggedFriend = findUserLoggedId?.friends;
+      if (userLoggedFriend && userSelectedFriend) {
+        if (userLoggedFriend.includes(selectedUserId)) {
+          findUserLoggedId.friends = userLoggedFriend.filter(
+            (friendId) => friendId.toString() !== selectedUserId
+          );
+
+          findUserSelectedId.friends = userSelectedFriend.filter(
+            (friendId) => friendId.toString() !== userLoggedId
+          );
+        }
+      }
+      await findUserLoggedId?.save();
+      await findUserSelectedId?.save();
+      const socketFriendId = selectedUserId
+        ? sessionsMap[selectedUserId]
+        : selectedUserId;
+      io.to(socketFriendId).emit("setFriend", selectedUserId);
+      io.to(socketFriendId).emit("setTitle");
+      return res
+        .status(201)
+        .json({ success: true, message: "Hủy kết bạn thành công" });
     } catch (err) {
       return res.status(500).json({ success: false, message: err.message });
     }
@@ -396,11 +475,13 @@ const userController = {
   getUserFriend: async (req: Request, res: Response) => {
     try {
       const userId = req.user.userId;
-      const user = await User.findById(userId).populate("friends", [
-        "username",
-        "email",
-        "picturePath",
-      ]);
+      const user = await User.findById(userId)
+        .populate({
+          path: "friends",
+          select: ["username", "email", "picturePath"],
+          options: { sort: { updatedAt: -1 } },
+        })
+        .sort();
       if (!user) {
         return res
           .status(404)
@@ -608,7 +689,7 @@ const userController = {
       if (searchQuery) {
         const users = await User.find({
           username: { $regex: searchQuery, $options: "i" },
-        }).select("_id username picturePath");
+        }).select("_id username picturePath displayName");
 
         if (users?.length > 0) {
           return res.status(200).json({

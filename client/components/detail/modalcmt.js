@@ -63,7 +63,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
   // CALL API GET COMMENT
   const handleGetComments = async () => {
     const req = await getCommentPostApi(postID);
-    if (req.status) {
+    if (req && req?.status) {
       EventRegister.emit("onSuccessUpdatePost");
       setAllComments(req.data);
       setIsLoading(false);
@@ -102,7 +102,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
   // HANDLE API DELETE COMMENT
   const handleDelCommentPost = async (id) => {
     const req = await delCommentPostApi(postID, id);
-    if (req.status) {
+    if (req && req?.status) {
       console.log("Delete success");
       setIsEdit(false);
       setCommentEdit("");
@@ -158,7 +158,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
       tag: idTag,
     };
     const req = await replyCommentApi(data);
-    if (req.status) {
+    if (req && req?.status) {
       setTimeout(() => {
         handleGetComments();
       }, 200);
@@ -185,7 +185,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
     };
 
     const req = await delReplyCommentApi(data);
-    if (req.status) {
+    if (req && req?.status) {
       console.log("Delete success");
       setIsEdit(false);
       setTimeout(() => {

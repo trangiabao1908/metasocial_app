@@ -1,24 +1,28 @@
 import {
-  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  StatusBar,
+  Text,
   FlatList,
   RefreshControl,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+  ActivityIndicator,
 } from "react-native";
 
-import { useEffect, useRef, useState } from "react";
-import { EventRegister } from "react-native-event-listeners";
-import Icon from "react-native-vector-icons/Entypo";
-import { useDispatch, useSelector } from "react-redux";
-import { getAllPostApi } from "../../api/postApi";
-import PostSkeleton from "../../components/custom/skeleton";
-import Footer from "../../components/footer";
+import Header from "../../components/home/header";
 import Post from "../../components/home/post";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import Footer from "../../components/footer";
 import ListStories from "../../components/stories";
+import { getAllPostApi } from "../../api/postApi";
+import ImageCustom from "../../components/custom/imageCustom";
+import { useDispatch, useSelector } from "react-redux";
 import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
+import { EventRegister } from "react-native-event-listeners";
+import PostSkeleton from "../../components/custom/skeleton";
+import { getImageFromCache } from "../../utils/caching";
+import socket from "../../utils/configSocket";
+import Icon from "react-native-vector-icons/Entypo";
 
 // import { ref, listAll, getDownloadURL } from "firebase/storage";
 // import { storage } from "../../firebase/config";
@@ -27,7 +31,7 @@ const storiesData = [
   {
     id: 1,
     name: "tptp.here",
-    source: require("../../assets/icon_avatar.png"),
+    // source: require("../../assets/icon_avatar.png"),
   },
 ];
 
@@ -130,6 +134,7 @@ const Home = ({ navigation, route }) => {
   };
 
   const handleRefreshing = async () => {
+    // console.log("Call API Refreshing");
     try {
       let query = "";
       dispatch(clearPost());
@@ -240,7 +245,7 @@ const Home = ({ navigation, route }) => {
                       size={20}
                       style={{ marginRight: 5 }}
                     />
-                    <Text>Opps! Bạn đã đọc hết rồi!</Text>
+                    <Text>Opps! Không có bài đăng nào mới!</Text>
                   </View>
                 ) : (
                   <ActivityIndicator size="small" />

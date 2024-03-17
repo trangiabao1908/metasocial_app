@@ -28,9 +28,6 @@ const Notification = () => {
     socket.on("notification", (data) => {
       getNotification();
     });
-    return () => {
-      socket.off("notification");
-    };
   }, []);
   useEffect(() => {
     getNotification();
@@ -49,6 +46,20 @@ const Notification = () => {
     let username = inputString[0];
     let content = inputString.slice(1).join(" ");
 
+    const getDataPost = async () => {
+      let type = "viewProfile";
+      let id = item.post?.author;
+
+      if (id) {
+        const req = await getPostByUserIdApi(id, type);
+        if (req.success) {
+          return req.data;
+        }
+      } else {
+        Alert.alert("Người dùng đã xóa bài viết này.");
+      }
+    };
+
     const handleGotoDetailPost = async () => {
       const postData = await getDataPost();
 
@@ -63,21 +74,21 @@ const Notification = () => {
       });
     };
 
-    const getDataPost = async () => {
-      let type = "viewProfile";
-      let id = item.post?.author;
-
-      if (id) {
-        const req = await getPostByUserIdApi(id, type);
-        if (req.success) {
-          return req.data;
-        }
-      } else {
-        Alert.alert("Người dùng đã xóa bài viết này.");
-      }
+    const handleGotoPer = (selectedUserId) => {
+      navigation.navigate("Personal", {
+        type: "viewProfile",
+        authorID: selectedUserId,
+      });
     };
     return (
-      <TouchableOpacity onPress={handleGotoDetailPost} key={item._id}>
+      <TouchableOpacity
+        onPress={() =>
+          item.type === "requestFriend" || item.type === "acceptFriend"
+            ? handleGotoPer(item.sender._id)
+            : handleGotoDetailPost()
+        }
+        key={item._id}
+      >
         <View
           style={{
             display: "flex",
@@ -146,13 +157,15 @@ const Notification = () => {
               marginRight: 20,
             }}
           >
-            <ImageCustom
-              source={{
-                uri: item.post?.assets[0].url,
-              }}
-              resizeMode={"cover"}
-              style={{ aspectRatio: 1, borderRadius: 12 }}
-            />
+            {item.post && (
+              <ImageCustom
+                source={{
+                  uri: item.post?.assets[0].url,
+                }}
+                resizeMode={"cover"}
+                style={{ aspectRatio: 1, borderRadius: 12 }}
+              />
+            )}
           </View>
         </View>
       </TouchableOpacity>

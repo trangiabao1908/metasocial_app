@@ -1,44 +1,82 @@
-import { useRoute } from "@react-navigation/native";
-import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   SafeAreaView,
   StyleSheet,
-  Text,
   TextInput,
+  Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
+import { useRoute } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/AntDesign";
-import { getLikeListApi } from "../../api/postApi";
-import CustomButton from "../../components/custom/button";
 import ImageCustom from "../../components/custom/imageCustom";
-import { useSelector } from "react-redux";
+
+import { useEffect, useState } from "react";
+import { getLikeListApi, searchUserLikeApi } from "../../api/postApi";
+import useDebounce from "../../hook/hooks";
 
 const LikeScreen = ({ navigation }) => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const friends = useSelector((state) => state?.userState?.user?.friends);
+
   const route = useRoute();
-  const userLoggedId = useSelector((state) => state?.userState?.user?._id);
+
+  const [q, setQ] = useState("");
+
+  const [results, setResults] = useState([]);
+
+  const [isSearch, setIsSearch] = useState(false);
+
+  const debounceValue = useDebounce(q, 500);
+
   useEffect(() => {
     getLikeList();
   }, []);
+
+  useEffect(() => {
+    getSearchResults();
+  }, [debounceValue]);
+
+  const getSearchResults = async () => {
+    if (debounceValue !== "") {
+      setLoading(true);
+      let postID = route?.params?.id;
+
+      const req = await searchUserLikeApi(postID, debounceValue);
+      if (req && req?.status) {
+        setResults(req.results);
+        setIsSearch(true);
+        setLoading(false);
+      }
+    } else {
+      setIsSearch(false);
+    }
+  };
 
   const getLikeList = async () => {
     setLoading(true);
     let postID = route?.params?.id;
     const req = await getLikeListApi(postID);
-    if (req.status) {
+    if (req && req?.status) {
       setList(req.list);
       setLoading(false);
     }
   };
 
+  const handleGoToPerScreen = (selectedUserId) => {
+    setQ("");
+    navigation.navigate("Personal", {
+      type: "viewProfile",
+      authorID: selectedUserId,
+    });
+  };
+
+  const handleChangeText = (text) => {
+    setQ(text);
+  };
+
   const renderLikeList = ({ item }) => {
-    const isFriend = friends?.find((friend) => friend._id === item?.user?._id);
-    const isUserLogged = item?.user?._id === userLoggedId;
     return (
       <View
         key={item._id}
@@ -50,17 +88,17 @@ const LikeScreen = ({ navigation }) => {
           paddingVertical: 10,
         }}
       >
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            marginLeft: 20,
-            width: "65%",
-          }}
+        <TouchableOpacity
+          onPress={() => handleGoToPerScreen(item.user._id.toString())}
         >
-          <TouchableOpacity
-          // onPress={() => handleGoToPerScreen(item._id.toString())}
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              marginLeft: 20,
+              width: "65%",
+            }}
           >
             <ImageCustom
               resizeMode="cover"
@@ -70,59 +108,37 @@ const LikeScreen = ({ navigation }) => {
                 uri: item.user.picturePath,
               }}
             />
-          </TouchableOpacity>
 
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginLeft: 5,
-              flexWrap: "wrap",
-            }}
-          >
             <View
               style={{
+                display: "flex",
+                flexDirection: "column",
                 marginLeft: 5,
-                marginBottom: 2,
+                flexWrap: "wrap",
               }}
             >
-              <Text style={{ fontWeight: "bold", marginBottom: 1 }}>
-                {item.user?.username}
-              </Text>
-              {item?.user?.displayName && (
-                <Text style={{ fontWeight: 400, color: "grey" }}>
-                  {item?.user?.displayName}
+              <View
+                style={{
+                  marginLeft: 5,
+                  marginBottom: 2,
+                }}
+              >
+                <Text style={{ fontWeight: "bold", marginBottom: 1 }}>
+                  {item.user?.username}
                 </Text>
-              )}
+                {item.user?.displayName && (
+                  <Text style={{ fontWeight: 400, color: "grey" }}>
+                    {item.user?.displayName}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
-        </View>
-
-        <View
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginRight: 20,
-          }}
-        >
-          {!isUserLogged ? (
-            <CustomButton
-              title={isFriend ? "Bạn bè" : "Thêm bạn bè"}
-              style={{ backgroundColor: "#00D5FA", borderRadius: 12 }}
-              styleText={{
-                paddingHorizontal: 4,
-                paddingVertical: 2,
-                color: "white",
-                fontWeight: "500",
-              }}
-            />
-          ) : (
-            <></>
-          )}
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
@@ -130,11 +146,18 @@ const LikeScreen = ({ navigation }) => {
           <View style={styles.wrapIcon}>
             <Icon name="search1" size={20} color="black" />
           </View>
-          <TextInput placeholder="Tìm kiếm...." style={styles.input} />
+          <TextInput
+            placeholder="Tìm kiếm...."
+            style={styles.input}
+            onChangeText={handleChangeText}
+          />
         </View>
       </View>
       {!loading ? (
-        <FlatList data={list} renderItem={renderLikeList} />
+        <FlatList
+          data={isSearch ? results : list}
+          renderItem={renderLikeList}
+        />
       ) : (
         <ActivityIndicator size={"small"} />
       )}

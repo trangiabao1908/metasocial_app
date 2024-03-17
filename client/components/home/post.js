@@ -243,7 +243,7 @@ const Post = ({
             <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
               {author.username}
             </Text>
-            <Text style={{ marginBottom: 5 }}>{title}</Text>
+            <Text style={{ marginBottom: 5, marginLeft: 5 }}>{title}</Text>
           </View>
           {disableComment ? (
             <View>

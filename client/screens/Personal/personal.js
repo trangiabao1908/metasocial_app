@@ -8,8 +8,10 @@ import { getPostByUserIdApi } from "../../api/postApi";
 import {
   acceptFriendRequestAPI,
   getChatIdAPI,
+  getFriends,
   getRequestFriendAPI,
   getSentFriendRequestAPI,
+  removeFriendAPI,
   sendRequestFriend,
 } from "../../api/userApi";
 import CustomButton from "../../components/custom/button";
@@ -18,7 +20,8 @@ import LeftHeader from "../../components/custom/leftHeader";
 import RightHeader from "../../components/custom/rightHeader";
 import Footer from "../../components/footer";
 import Paper from "../../components/personal/paper";
-import { setFriends } from "../../redux/user";
+import { setFriends, setNewFriends } from "../../redux/user";
+import socket from "../../utils/configSocket";
 
 const Personal = ({}) => {
   const route = useRoute();
@@ -68,20 +71,25 @@ const Personal = ({}) => {
       setFriendsRequest(res.friendRequests);
     }
   };
-
+  const getSentFriend = async () => {
+    const res = await getSentFriendRequestAPI(userID);
+    if (res && res?.success) {
+      res?.data?.filter((item) =>
+        item._id === route?.params?.authorID
+          ? setTitle("Hủy thêm bạn bè")
+          : setTitle("Thêm bạn bè")
+      );
+    }
+  };
   useEffect(() => {
-    const getSentFriend = async () => {
-      const res = await getSentFriendRequestAPI(userID);
-      if (res && res?.success) {
-        res?.data?.filter((item) =>
-          item._id === route?.params?.authorID
-            ? setTitle("Hủy thêm bạn bè")
-            : setTitle("Thêm bạn bè")
-        );
-      }
-    };
+    socket.on("setTitle", () => {
+      setTitle("Thêm bạn bè");
+    });
     getSentFriend();
     getFriendsRequest();
+    return () => {
+      socket.off("setTitle");
+    };
   }, []);
   const getDataPersonal = async () => {
     let id = "";
@@ -112,18 +120,13 @@ const Personal = ({}) => {
     if (res && res.success) {
       Alert.alert(res.message);
       dispatch(setFriends(res.data));
+      console.log(userID);
+      console.log(needAcceptedId);
+      getFriendsRequest();
     }
   };
-  const handleGetChatID = async () => {
-    let chatId;
-    const res = await getChatIdAPI(route?.params?.authorID);
-    if (res && res.success) {
-      chatId = res.chatId;
-    }
-    return chatId;
-  };
+
   const handleNavigateToMessageScreen = async (item) => {
-    // const chatId = await handleGetChatID();
     const values = {
       userInfo: {
         _id: item._id,
@@ -131,7 +134,6 @@ const Personal = ({}) => {
         picturePath: item.picturePath,
         email: item.email,
       },
-      // chatId,
     };
     navigation.navigate("Message", { data: values });
   };
@@ -142,6 +144,15 @@ const Personal = ({}) => {
       res?.type === "remove"
         ? setTitle("Thêm bạn bè")
         : setTitle("Hủy thêm bạn bè");
+    }
+  };
+  const handleRemoveFriend = async (selectedUserId) => {
+    const res = await removeFriendAPI(selectedUserId);
+    if (res && res.success) {
+      Alert.alert(res?.message);
+      const getFriend = await getFriends();
+      getFriend && dispatch(setNewFriends(getFriend));
+      setTitle("Thêm bạn bè");
     }
   };
   return (
@@ -245,12 +256,12 @@ const Personal = ({}) => {
               {type === "viewProfile" && !isAuthor ? (
                 <CustomButton
                   title={
-                    isFriend ? "Bạn bè" : isNeedAccept ? "Xác nhận" : title
+                    isFriend ? "Hủy kết bạn" : isNeedAccept ? "Xác nhận" : title
                   }
                   styleText={{ fontWeight: "500" }}
                   onPress={() => {
                     isFriend
-                      ? console.log("Friend")
+                      ? handleRemoveFriend(route?.params?.authorID)
                       : isNeedAccept
                       ? handleAcceptFriend(route?.params?.authorID)
                       : handleSendRequestFriend(route?.params?.authorID);

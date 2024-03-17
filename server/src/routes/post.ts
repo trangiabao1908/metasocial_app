@@ -112,4 +112,11 @@ router.get(
   postController.getLikeList
 );
 
+// search user like
+router.get(
+  "/like/search/:id",
+  middlewareAuth.verifyToken,
+  postController.searchUserLike
+);
+
 export default router;

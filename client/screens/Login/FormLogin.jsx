@@ -20,8 +20,8 @@ const loginSchema = yup.object().shape({
 });
 
 const initialValueLogin = {
-  email: "giabao190802@gmail.com",
-  password: "123456",
+  email: "",
+  password: "",
 };
 
 // define register schema

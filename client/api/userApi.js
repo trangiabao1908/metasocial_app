@@ -188,3 +188,19 @@ export const searchUserApi = async (q) => {
     console.log(err.response?.data.message);
   }
 };
+
+export const removeFriendAPI = async (selectedUserId) => {
+  try {
+    const headers = await config();
+    const res = await API.put(
+      `/user/unfriend-request`,
+      { selectedUserId },
+      { headers }
+    );
+    if (res?.data?.success) {
+      return res.data;
+    }
+  } catch (err) {
+    console.log(err.response?.data.message);
+  }
+};

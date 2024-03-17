@@ -3,6 +3,7 @@
 import { API } from "./authApi";
 
 import { config } from "../utils/configAxios";
+import { Alert } from "react-native";
 // API POST
 
 // Get 5 Post
@@ -138,7 +139,7 @@ export const commentPost = async (req) => {
     });
     return data;
   } catch (err) {
-    console.log(err);
+    Alert.alert("Thông Báo", err?.response?.data?.message);
   }
 };
 
@@ -189,7 +190,7 @@ export const replyCommentApi = async (req) => {
     );
     return data;
   } catch (err) {
-    console.log(err);
+    Alert.alert("Thông Báo", err?.response?.data?.message);
   }
 };
 

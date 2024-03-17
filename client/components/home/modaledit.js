@@ -53,7 +53,7 @@ const ModalEdit = ({
     let disableComment = true;
 
     const req = await hideCommentApi(postID, disableComment);
-    if (req.status) {
+    if (req && req?.status) {
       dispatch(hideComment({ _id: postID }));
 
       handleCloseModalEdit();
@@ -63,7 +63,7 @@ const ModalEdit = ({
     let disableComment = false;
 
     const req = await hideCommentApi(postID, disableComment);
-    if (req.status) {
+    if (req && req?.status) {
       dispatch(hideComment({ _id: postID }));
       handleCloseModalEdit();
     }
@@ -203,7 +203,7 @@ const ModalEdit = ({
                   <View style={[styles.flexRow, styles.itemLeft]}>
                     <AntDesign name="pushpino" size={15} style={styles.icon} />
                     <Text style={styles.fontSize16}>
-                      Ghim lên trnag cá nhân
+                      Ghim lên trang cá nhân
                     </Text>
                   </View>
                 </View>

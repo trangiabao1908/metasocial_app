@@ -32,7 +32,7 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(
   cors({
-    origin: "http://localhost:8081",
+    // origin: "http://localhost:8081",
     credentials: true,
   })
 );
@@ -52,7 +52,7 @@ const PORT = process.env.PORT || 3000;
 const server = createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:8081"],
+    // origin: ["http://localhost:8081"],
     credentials: true,
   },
 });

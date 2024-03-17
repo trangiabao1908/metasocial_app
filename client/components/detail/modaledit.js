@@ -78,7 +78,7 @@ const ModalEdit = ({
   const handleTurnOffComment = async () => {
     let disableComment = true;
     const req = await hideCommentApi(postID, disableComment);
-    if (req.status) {
+    if (req && req?.status) {
       EventRegister.emit("onSuccessUpdatedUser");
       EventRegister.emit("onSuccessUpdatePost");
       handleCloseModalEdit();
@@ -87,7 +87,7 @@ const ModalEdit = ({
   const handleTurnOnComment = async () => {
     let disableComment = false;
     const req = await hideCommentApi(postID, disableComment);
-    if (req.status) {
+    if (req && req?.status) {
       EventRegister.emit("onSuccessUpdatedUser");
       EventRegister.emit("onSuccessUpdatePost");
       handleCloseModalEdit();
@@ -216,9 +216,7 @@ const ModalEdit = ({
                       </View>
                     </View>
                   ) : (
-                    <View>
-                      <Text>Kkkk</Text>
-                    </View>
+                    <></>
                   )}
                 </TouchableOpacity>
                 <View style={styles.borderWidth}>

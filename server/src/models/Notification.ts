@@ -4,7 +4,13 @@ import { IPost } from "./Post";
 export interface INotification extends Document {
   sender: IUser;
   receiver: IUser;
-  type: "like" | "comment" | "post" | "reply";
+  type:
+    | "like"
+    | "comment"
+    | "post"
+    | "reply"
+    | "requestFriend"
+    | "acceptFriend";
   content: string;
   post: IPost;
   isRead: boolean;
@@ -24,7 +30,14 @@ const notificationSchema = new Schema<INotification>(
     },
     type: {
       type: String,
-      enum: ["like", "comment", "post", "reply"],
+      enum: [
+        "like",
+        "comment",
+        "post",
+        "reply",
+        "requestFriend",
+        "acceptFriend",
+      ],
     },
     content: {
       type: String,

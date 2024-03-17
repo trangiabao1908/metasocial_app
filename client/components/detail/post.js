@@ -213,14 +213,18 @@ const Post = ({
           </View>
         </View>
         <View style={posts.comment}>
-          <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
-            {like.length} lượt thích
-          </Text>
+          <TouchableOpacity
+            onPress={() => navigate.navigate("LikeScreen", { id })}
+          >
+            <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+              {like.length} lượt thích
+            </Text>
+          </TouchableOpacity>
           <View style={{ display: "flex", flexDirection: "row" }}>
             <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
               {author.username}
             </Text>
-            <Text style={{ marginBottom: 5 }}>{title}</Text>
+            <Text style={{ marginBottom: 5, marginLeft: 5 }}>{title}</Text>
           </View>
           {disableComment ? (
             <View>

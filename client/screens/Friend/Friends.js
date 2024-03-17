@@ -69,13 +69,13 @@ const Friends = ({ navigation }) => {
             width: "65%",
           }}
         >
-          <TouchableOpacity onPress={() => handleGoToPerScreen(item._id)}>
+          <TouchableOpacity onPress={() => handleGoToPerScreen(item?._id)}>
             <ImageCustom
               resizeMode="cover"
               style={{ width: 45, height: 45 }}
               type={"avatar"}
               source={{
-                uri: item.picturePath,
+                uri: item?.picturePath,
               }}
             />
           </TouchableOpacity>
@@ -94,10 +94,12 @@ const Friends = ({ navigation }) => {
               }}
             >
               <Text style={{ fontWeight: "bold", marginBottom: 1 }}>
-                {item.username}
+                {item?.username}
               </Text>
               <Text style={{ fontWeight: 400, color: "grey" }}>
-                {item.email}
+                {item?.email.length < 20
+                  ? item?.email
+                  : item?.email?.substring(0, 20) + "..."}
               </Text>
             </View>
           </View>
@@ -113,7 +115,7 @@ const Friends = ({ navigation }) => {
           <CustomButton
             title={"Xác nhận"}
             style={{ backgroundColor: "#00D5FA" }}
-            onPress={() => handleAcceptFriend(item._id.toString())}
+            onPress={() => handleAcceptFriend(item?._id?.toString())}
             styleText={{
               paddingHorizontal: 10,
               paddingVertical: 8,
@@ -127,11 +129,6 @@ const Friends = ({ navigation }) => {
   };
 
   const handleNavigateToMessageScreen = async (item) => {
-    // let chatId;
-    // const res = await getChatIdAPI(item._id);
-    // if (res && res.success) {
-    //   chatId = res.chatId;
-    // }
     const values = {
       userInfo: {
         _id: item._id,
@@ -139,7 +136,6 @@ const Friends = ({ navigation }) => {
         picturePath: item.picturePath,
         email: item.email,
       },
-      // chatId,
     };
     navigation.navigate("Message", { data: values });
   };
@@ -196,7 +192,9 @@ const Friends = ({ navigation }) => {
                 {item.username}
               </Text>
               <Text style={{ fontWeight: 400, color: "grey" }}>
-                {item.email}
+                {item?.email.length < 20
+                  ? item?.email
+                  : item?.email?.substring(0, 20) + "..."}
               </Text>
             </View>
           </View>
