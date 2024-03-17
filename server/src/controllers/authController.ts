@@ -215,6 +215,12 @@ const authController = {
           message: "Mật khẩu không khớp",
         });
       }
+      if (password.length < 6) {
+        return res.status(403).json({
+          success: false,
+          message: "Mật khẩu tối thiểu phải có 6 ký tự",
+        });
+      }
       const hashPassword = await argon2.hash(password);
       const newUser = new User({
         username,
