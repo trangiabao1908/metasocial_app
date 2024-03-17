@@ -30,20 +30,21 @@ const Message = ({ navigation, route }) => {
   const [preMessageImage, setPreMessageImage] = useState(null);
   const [deleteMessages, setDeleteMessages] = useState([]);
   const flatListRef = useRef();
-
+  let chatID;
   useEffect(() => {
     const fetchMessage = async () => {
-      const res = await fetchMessageApi(data.userInfo._id, "");
+      const res = await fetchMessageApi(data?.userInfo?._id, "");
       if (res && res.success) {
         setMessages(res.messages.reverse());
         setLoadingFetchMessage(!loadingFetchMessage);
+        socket.emit("chatId", res.chatId);
+        chatID = res?.chatId;
       }
     };
     fetchMessage();
   }, []);
   useEffect(() => {
-    // socket.connect();
-    socket.emit("chatId", data.chatId);
+    // socket.emit("chatId", data.chatId);
     socket.on("fetchChat", (newMessage) => {
       let newMessageFormatted;
       if (newMessage.receiverId._id.toString() === userLoggedId.toString()) {
@@ -76,13 +77,13 @@ const Message = ({ navigation, route }) => {
     return () => {
       socket.off("fetchChat");
       socket.off("deletedMessage");
-      socket.emit("leaveRoom", data.chatId);
+      socket.emit("leaveRoom", chatID);
       console.log("Disconected fetch chat event");
     };
   }, []);
   const handleDeleteMessage = async () => {
     const values = {
-      receiverId: data.userInfo._id,
+      receiverId: data?.userInfo?._id,
       messages: deleteMessages,
     };
     const res = await deleteMessageApi(values);
@@ -172,7 +173,7 @@ const Message = ({ navigation, route }) => {
           {!loadingFetchMessage ? (
             <>
               <ListMessage
-                data={data.userInfo}
+                data={data?.userInfo}
                 messages={messages}
                 preMessageImage={preMessageImage}
                 loadingMesasge={loadingMesasge}
@@ -183,7 +184,7 @@ const Message = ({ navigation, route }) => {
                 flatListRef={flatListRef}
               />
               <InputMessage
-                selectedUserId={data.userInfo._id}
+                selectedUserId={data?.userInfo?._id}
                 messages={messages}
                 setMessages={setMessages}
                 setPreMessageImage={setPreMessageImage}

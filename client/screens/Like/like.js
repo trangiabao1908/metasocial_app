@@ -1,28 +1,27 @@
+import { useRoute } from "@react-navigation/native";
+import { useEffect, useState } from "react";
 import {
-  Alert,
-  Dimensions,
+  ActivityIndicator,
   FlatList,
   SafeAreaView,
   StyleSheet,
-  TextInput,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/AntDesign";
-import ImageCustom from "../../components/custom/imageCustom";
-import CustomButton from "../../components/custom/button";
-import { useEffect, useState } from "react";
 import { getLikeListApi } from "../../api/postApi";
+import CustomButton from "../../components/custom/button";
+import ImageCustom from "../../components/custom/imageCustom";
+import { useSelector } from "react-redux";
 
 const LikeScreen = ({ navigation }) => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const friends = useSelector((state) => state?.userState?.user?.friends);
   const route = useRoute();
-
+  const userLoggedId = useSelector((state) => state?.userState?.user?._id);
   useEffect(() => {
     getLikeList();
   }, []);
@@ -38,7 +37,8 @@ const LikeScreen = ({ navigation }) => {
   };
 
   const renderLikeList = ({ item }) => {
-    console.log(item);
+    const isFriend = friends?.find((friend) => friend._id === item?.user?._id);
+    const isUserLogged = item?.user?._id === userLoggedId;
     return (
       <View
         key={item._id}
@@ -89,9 +89,9 @@ const LikeScreen = ({ navigation }) => {
               <Text style={{ fontWeight: "bold", marginBottom: 1 }}>
                 {item.user?.username}
               </Text>
-              {item.user?.displayName && (
+              {item?.user?.displayName && (
                 <Text style={{ fontWeight: 400, color: "grey" }}>
-                  {item.user?.displayName}
+                  {item?.user?.displayName}
                 </Text>
               )}
             </View>
@@ -105,16 +105,20 @@ const LikeScreen = ({ navigation }) => {
             marginRight: 20,
           }}
         >
-          <CustomButton
-            title={"Thêm bạn bè"}
-            style={{ backgroundColor: "#00D5FA", borderRadius: 12 }}
-            styleText={{
-              paddingHorizontal: 4,
-              paddingVertical: 2,
-              color: "white",
-              fontWeight: "500",
-            }}
-          />
+          {!isUserLogged ? (
+            <CustomButton
+              title={isFriend ? "Bạn bè" : "Thêm bạn bè"}
+              style={{ backgroundColor: "#00D5FA", borderRadius: 12 }}
+              styleText={{
+                paddingHorizontal: 4,
+                paddingVertical: 2,
+                color: "white",
+                fontWeight: "500",
+              }}
+            />
+          ) : (
+            <></>
+          )}
         </View>
       </View>
     );

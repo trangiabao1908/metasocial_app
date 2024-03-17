@@ -85,7 +85,7 @@ const Chat = ({ navigation }) => {
     const isSender = lastMessage.senderId === userLoggedId;
     let messageDisplay;
     const maxMessageLength = 15;
-    if (messageFormatted.length > maxMessageLength) {
+    if (messageFormatted?.length > maxMessageLength) {
       messageFormatted =
         messageFormatted.substring(0, maxMessageLength) + "...";
     }

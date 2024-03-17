@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Test1",
-    "slug": "Test1",
+    "name": "MetaSocial",
+    "slug": "metasocial",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,15 +22,16 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.trangiabao190802.Test1"
+      "package": "com.trangiabao190802.MetaSocial"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "8c9e8cc0-d9ff-4fdf-8ab5-1a499db05588"
+        "projectId": "1c2be1bb-6948-4929-89c3-a816d5c851af"
       }
-    }
+    },
+    "owner": "trangiabao190802"
   }
 }

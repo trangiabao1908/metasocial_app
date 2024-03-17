@@ -116,17 +116,17 @@ export const Layout = () => {
           }
         }
       });
-      socket.on("setFriend", () => {
-        console.log("handle SetFriend");
-        const again = async () => {
-          const req = await getFriends();
-
-          if (req && req.success) {
-            console.log({ data: req.friends });
-            dispatch(setNewFriends(req));
-          }
-        };
-        again();
+      socket.on("setFriend", (receiverId) => {
+        if (receiverId.toString() === userId.toString()) {
+          const again = async () => {
+            const req = await getFriends();
+            if (req && req.success) {
+              console.log({ data: req.friends });
+              dispatch(setNewFriends(req));
+            }
+          };
+          again();
+        }
       });
     }
     return () => {

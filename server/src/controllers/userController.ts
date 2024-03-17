@@ -226,10 +226,10 @@ const userController = {
       };
 
       if (acceptFriendId) {
-        const socketID = sessionsMap[acceptFriendId];
-        console.log(socketID);
-
-        io.to(socketID).emit("setFriend");
+        const socketFriendID = acceptFriendId
+          ? sessionsMap[acceptFriendId]
+          : acceptFriendId;
+        io.to(socketFriendID).emit("setFriend", acceptFriendId);
       }
 
       return res.status(200).json({
@@ -364,12 +364,29 @@ const userController = {
           imageUrl: decryptedImageMessage,
         };
       });
-
+      let chat = await Chat.findOne({
+        $or: [
+          {
+            "participants.senderId": senderId,
+            "participants.receiverId": selectedUserId,
+          },
+          {
+            "participants.senderId": selectedUserId,
+            "participants.receiverId": senderId,
+          },
+        ],
+      });
+      if (!chat) {
+        chat = await Chat.create({
+          participants: { senderId: senderId, receiverId: selectedUserId },
+        });
+      }
       // console.log(messagesFormatted);
       return res.status(201).json({
         success: true,
         message: "Fetch Message successfully",
         messages: messagesFormatted,
+        chatId: chat?._id,
       });
     } catch (err) {
       return res.status(500).json({ success: false, message: err.messsage });

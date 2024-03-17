@@ -54,6 +54,7 @@ io.on("connection", (socket: Socket) => {
   });
   socket.on("leaveRoom", (chatId) => {
     socket.leave(chatId);
+    console.log(`leaveRoom: ${chatId}`);
   });
   socket.on("disconnect", () => {
     for (const userId in sessionsMap) {

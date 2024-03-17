@@ -4,7 +4,6 @@ import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutApi } from "../../api/authApi";
 import { getPostByUserIdApi } from "../../api/postApi";
 import {
   acceptFriendRequestAPI,
@@ -19,8 +18,7 @@ import LeftHeader from "../../components/custom/leftHeader";
 import RightHeader from "../../components/custom/rightHeader";
 import Footer from "../../components/footer";
 import Paper from "../../components/personal/paper";
-import { clearPost } from "../../redux/post";
-import { setFriends, setLogout } from "../../redux/user";
+import { setFriends } from "../../redux/user";
 
 const Personal = ({}) => {
   const route = useRoute();
@@ -125,7 +123,7 @@ const Personal = ({}) => {
     return chatId;
   };
   const handleNavigateToMessageScreen = async (item) => {
-    const chatId = await handleGetChatID();
+    // const chatId = await handleGetChatID();
     const values = {
       userInfo: {
         _id: item._id,
@@ -133,7 +131,7 @@ const Personal = ({}) => {
         picturePath: item.picturePath,
         email: item.email,
       },
-      chatId,
+      // chatId,
     };
     navigation.navigate("Message", { data: values });
   };

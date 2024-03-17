@@ -1,3 +1,5 @@
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -7,18 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useDispatch, useSelector } from "react-redux";
+import { acceptFriendRequestAPI, getRequestFriendAPI } from "../../api/userApi";
 import CustomButton from "../../components/custom/button";
 import ImageCustom from "../../components/custom/imageCustom";
-import {
-  acceptFriendRequestAPI,
-  getChatIdAPI,
-  getRequestFriendAPI,
-} from "../../api/userApi";
-import { useSelector, useDispatch } from "react-redux";
-import React, { useEffect, useState } from "react";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import { setFriends } from "../../redux/user";
-import { useFocusEffect } from "@react-navigation/native";
 const Friends = ({ navigation }) => {
   const userLoggedId = useSelector((state) => state?.userState?.user?._id);
   const [friendsRequest, setFriendsRequest] = useState([]);
@@ -131,11 +127,11 @@ const Friends = ({ navigation }) => {
   };
 
   const handleNavigateToMessageScreen = async (item) => {
-    let chatId;
-    const res = await getChatIdAPI(item._id);
-    if (res && res.success) {
-      chatId = res.chatId;
-    }
+    // let chatId;
+    // const res = await getChatIdAPI(item._id);
+    // if (res && res.success) {
+    //   chatId = res.chatId;
+    // }
     const values = {
       userInfo: {
         _id: item._id,
@@ -143,7 +139,7 @@ const Friends = ({ navigation }) => {
         picturePath: item.picturePath,
         email: item.email,
       },
-      chatId,
+      // chatId,
     };
     navigation.navigate("Message", { data: values });
   };
