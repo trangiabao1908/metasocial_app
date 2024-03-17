@@ -7,7 +7,7 @@ import { config } from "../utils/configAxios";
 
 // Get 5 Post
 export const getAllPostApi = async (updatedAt) => {
-  console.log(updatedAt);
+  // console.log(updatedAt);
   // console.log({ page: page });
 
   const headers = await config();

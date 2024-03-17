@@ -6,7 +6,7 @@ import {
 } from "../utils/processStore";
 import { Alert } from "react-native";
 import { config } from "../utils/configAxios";
-const BASE_URL = "https://metasocial-app.onrender.com/api";
+const BASE_URL = "http://192.168.70.61:3000/api";
 export const API = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,

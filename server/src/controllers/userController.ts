@@ -299,14 +299,13 @@ const userController = {
           );
         }
       }
-
-      const roomName = chat._id.toString();
+      const roomName = chat?._id?.toString();
       const rooms = io.sockets.adapter.rooms;
-      if (rooms.has(roomName) && rooms.get(roomName).has(receiverSocketId)) {
+      if (rooms.has(roomName) && rooms.get(roomName)?.has(receiverSocketId)) {
         console.log(
           `Người dùng có id ${receiverId} đã tham gia vào phòng ${roomName}.`
         );
-        io.to(chat._id.toString()).emit("fetchChat", newMessageFormatted);
+        io.to(roomName).emit("fetchChat", newMessageFormatted);
       } else {
         console.log(
           `Người dùng có id ${receiverId} chưa tham gia vào phòng ${roomName}.`

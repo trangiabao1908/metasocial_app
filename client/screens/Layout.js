@@ -1,19 +1,19 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // Import Screen
 import EditPerScreen from "../components/personal/edit.js";
 import ChatScreen from "./Chat/chat.js";
 import Detailpost from "./DetailPost/Detailpost.js";
+import FriendScreen from "./Friend/Friends.js";
 import HomeScreen from "./Home/Home.js";
+import LikeScreen from "./Like/like.js";
 import LoginScreen from "./Login/Login.jsx";
 import MessageScreen from "./Message/message.js";
+import Notification from "./Notification/Notification.js";
 import PersonalScreen from "./Personal/personal.js";
 import PostScreen from "./Post/post";
-import FriendScreen from "./Friend/Friends.js";
 import SearchScreen from "./Search/search.js";
-import Notification from "./Notification/Notification.js";
-import LikeScreen from "./Like/like.js";
 
 // Import Modal
 import ModalComments from "../components/home/modalcmt.js";
@@ -25,14 +25,14 @@ import RightHeader from "../components/custom/rightHeader";
 
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "react-native-toast-notifications";
+import { getFriends } from "../api/userApi.js";
 import { HeaderLeft, HeaderRight } from "../components/home/header.js";
+import { setNewFriends } from "../redux/user.js";
 import socket from "../utils/configSocket.js";
 import { getToken } from "../utils/processStore.js";
 import { playSoundFromLocalFile, setAudioMode } from "../utils/soundMessage.js";
 import ChangePassword from "./ChangePassword/ChangePassword.js";
 import ForgotPassword from "./ForgotPassword/ForgotPassword.js";
-import { getFriends } from "../api/userApi.js";
-import { setFriends, setNewFriends } from "../redux/user.js";
 
 const Stack = createNativeStackNavigator();
 export const Layout = () => {

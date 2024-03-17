@@ -10,19 +10,21 @@ import authRoutes from "./routes/auth";
 import postRoutes from "./routes/post";
 import userRoutes from "./routes/user";
 import notificationRoutes from "./routes/notification";
+import { Server } from "socket.io";
+import { createServer } from "http";
 
 // Mongodb config
 dotenv.config();
 configMongoose();
 
 const app = express();
-const http = require("https").createServer(app);
-export const io = require("socket.io")(http, {
-  cors: {
-    origin: ["http://localhost:8081"],
-    credentials: true,
-  },
-});
+// const http = require("http").createServer(app);
+// export const io = require("socket.io")(http, {
+//   cors: {
+//     origin: ["http://localhost:8081"],
+//     credentials: true,
+//   },
+// });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
@@ -42,11 +44,19 @@ app.use("/api/post", postRoutes);
 app.use("/api/notification", notificationRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server listing on port ${PORT}`);
+
+// app.listen(PORT, () => {
+//   console.log(`Server listing on port ${PORT}`);
+// });
+
+const server = createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:8081"],
+    credentials: true,
+  },
 });
 export const sessionsMap: Record<string, string> = {};
-
 io.on("connection", (socket: Socket) => {
   console.log("User connected");
   console.log("SocketId: " + socket.id);
@@ -76,6 +86,9 @@ io.on("connection", (socket: Socket) => {
     }
   });
 });
-http.listen(443, () => {
-  console.log("Socket.IO listening on port 443");
+// http.listen(443, () => {
+//   console.log("Socket.IO listening on port 443");
+// });
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
