@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
-const socket = io("ws://metasocial-app.onrender.com", {
-  transports: ["websocket", "polling"],
+const socket = io("https://metasocial-app.onrender.com", {
+  transports: ["websocket"],
   withCredentials: true,
 });
 socket.on("connect", () => {

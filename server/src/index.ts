@@ -16,14 +16,24 @@ dotenv.config();
 configMongoose();
 
 const app = express();
-const http = require("http").createServer(app);
-export const io = require("socket.io")(http);
+const http = require("https").createServer(app);
+export const io = require("socket.io")(http, {
+  cors: {
+    origin: ["http://localhost:8081"],
+    credentials: true,
+  },
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:8081",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 /* Routes */
 app.use("/api/auth", authRoutes);
