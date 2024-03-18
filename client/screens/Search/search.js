@@ -167,7 +167,7 @@ const Search = () => {
           >
             {item.assets[0].type === "video" ? (
               <Video
-                shouldPlay={true}
+                shouldPlay={false}
                 source={{
                   uri: item.assets[0].url,
                 }}

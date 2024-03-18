@@ -1,6 +1,7 @@
 import * as CryptoJS from "crypto-js";
-
-const key = CryptoJS.enc.Utf8.parse("encryptedMessage");
+import dotenv from "dotenv";
+dotenv.config();
+const key = CryptoJS.enc.Utf8.parse(process.env.SECRET_KEY as string);
 
 export const encryptMessage = (text: string): string => {
   const ciphertext = CryptoJS.AES.encrypt(text, key, {
