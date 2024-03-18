@@ -22,7 +22,7 @@ const ChangePassword = () => {
   const dispatch = useDispatch();
   const handleLogout = async () => {
     const req = await logoutApi();
-    if (req.success) {
+    if (req && req.success) {
       dispatch(setLogout());
       dispatch(clearPost());
     }

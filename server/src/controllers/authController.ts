@@ -324,6 +324,7 @@ const authController = {
   //function to refreshToken for mobile devices
   refreshTokenMobile: async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
+    console.log(refreshToken);
     if (!refreshToken) {
       return res.status(401);
     }

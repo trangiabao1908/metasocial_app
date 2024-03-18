@@ -1,28 +1,24 @@
 import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  StatusBar,
-  Text,
+  ActivityIndicator,
   FlatList,
   RefreshControl,
-  ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
-import Header from "../../components/home/header";
-import Post from "../../components/home/post";
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
-import Footer from "../../components/footer";
-import ListStories from "../../components/stories";
-import { getAllPostApi } from "../../api/postApi";
-import ImageCustom from "../../components/custom/imageCustom";
-import { useDispatch, useSelector } from "react-redux";
-import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
+import { useEffect, useRef, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
-import PostSkeleton from "../../components/custom/skeleton";
-import { getImageFromCache } from "../../utils/caching";
-import socket from "../../utils/configSocket";
 import Icon from "react-native-vector-icons/Entypo";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllPostApi } from "../../api/postApi";
+import PostSkeleton from "../../components/custom/skeleton";
+import Footer from "../../components/footer";
+import Post from "../../components/home/post";
+import ListStories from "../../components/stories";
+import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
 
 // import { ref, listAll, getDownloadURL } from "firebase/storage";
 // import { storage } from "../../firebase/config";
@@ -114,7 +110,7 @@ const Home = ({ navigation, route }) => {
 
     try {
       const req = await getAllPostApi(updatedAt);
-      if (req.success) {
+      if (req && req?.success) {
         if (req.posts.length > 0) {
           const latedPost = req.posts[req.posts.length - 1];
           setUpdatedAt(latedPost.updatedAt);
@@ -140,7 +136,7 @@ const Home = ({ navigation, route }) => {
       dispatch(clearPost());
       const req = await getAllPostApi(query);
 
-      if (req.success) {
+      if (req && req?.success) {
         if (req.posts.length > 0) {
           const latedPost = req.posts[req.posts.length - 1];
           setUpdatedAt(latedPost.updatedAt);

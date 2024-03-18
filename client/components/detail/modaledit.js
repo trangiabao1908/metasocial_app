@@ -45,7 +45,7 @@ const ModalEdit = ({
     let type = "viewProfile";
 
     const req = await getPostByUserIdApi(id, type);
-    if (req.success) {
+    if (req && req.success) {
       setPostData(req.data);
     }
   };

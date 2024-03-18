@@ -264,9 +264,8 @@ export const getLikeListApi = async (postID) => {
 export const searchUserLikeApi = async (postID, q) => {
   const headers = await config();
   console.log({ postID, q });
-
   try {
-    const { data } = await API.get(post/like/search/${postID}?q=${q}, {
+    const { data } = await API.get(`post/like/search/${postID}?q=${q}`, {
       headers,
     });
     return data;

@@ -1,29 +1,25 @@
+import { useNavigation } from "@react-navigation/native";
+import { Video } from "expo-av";
+import React, { memo, useState } from "react";
 import {
+  Dimensions,
   SafeAreaView,
-  View,
   StyleSheet,
   Text,
-  Image,
-  Dimensions,
   TouchableOpacity,
+  View,
 } from "react-native";
-import React, { memo, useEffect } from "react";
 import { SwiperFlatList } from "react-native-swiper-flatlist";
-import Icon from "react-native-vector-icons/Entypo";
 import Icon2 from "react-native-vector-icons/AntDesign";
+import Icon from "react-native-vector-icons/Entypo";
 import Icon3 from "react-native-vector-icons/Feather";
-import { useState } from "react";
-import ModalComments from "./modalcmt";
-import ImageCustom from "../custom/imageCustom";
-import ModalEdit from "./modaledit";
-import { likePostApi } from "../../api/postApi";
 import { useDispatch, useSelector } from "react-redux";
+import { likePostApi } from "../../api/postApi";
 import { likePostRD } from "../../redux/post";
-import { useNavigation } from "@react-navigation/native";
 import { formatTime } from "../../utils/setTime";
-import { Video } from "expo-av";
-
-import socket from "../../utils/configSocket";
+import ImageCustom from "../custom/imageCustom";
+import ModalComments from "./modalcmt";
+import ModalEdit from "./modaledit";
 
 import { EventRegister } from "react-native-event-listeners";
 

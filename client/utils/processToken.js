@@ -19,7 +19,7 @@ export const checkToken = async () => {
       const refreshToken = await decryptRefreshToken();
       console.log("decryptRefreshToken:", refreshToken);
       const res = await refreshTokenApi(refreshToken);
-      if (res.success === true) {
+      if (res && res.success === true) {
         await saveToken(res.accessToken);
         await encryptRefreshToken(res.refreshToken);
       }

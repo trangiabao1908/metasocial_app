@@ -12,7 +12,7 @@ const RightHeader = ({ screen, type }) => {
 
   const handleLogout = async () => {
     const req = await logoutApi();
-    if (req.success) {
+    if (req?.success) {
       dispatch(setLogout());
       dispatch(clearPost());
     }
@@ -43,7 +43,6 @@ const RightHeader = ({ screen, type }) => {
           </TouchableOpacity>
         </Fragment>
       )}
-      
     </View>
   );
 };
