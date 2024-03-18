@@ -1,24 +1,23 @@
+import { useRoute } from "@react-navigation/native";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { Formik } from "formik";
+import { useState } from "react";
 import {
-  StyleSheet,
-  View,
-  StatusBar,
-  Text,
   ActivityIndicator,
   Alert,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import * as yup from "yup";
-import { Formik } from "formik";
-import PostScreen from "../../components/post/top";
-import HeaderPost from "../../components/post/header";
-import { createPostApi, updatePostApi } from "../../api/postApi";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../../firebase/config";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { createPostRD, updatePostRD } from "../../redux/post";
-import { useRoute } from "@react-navigation/native";
 import { EventRegister } from "react-native-event-listeners";
-import { saveImageToCache } from "../../utils/caching";
+import { useDispatch, useSelector } from "react-redux";
+import * as yup from "yup";
+import { createPostApi, updatePostApi } from "../../api/postApi";
+import HeaderPost from "../../components/post/header";
+import PostScreen from "../../components/post/top";
+import { storage } from "../../firebase/config";
+import { createPostRD, updatePostRD } from "../../redux/post";
 
 const Post = ({ navigation }) => {
   // const
