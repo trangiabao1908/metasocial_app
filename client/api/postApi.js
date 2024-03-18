@@ -261,3 +261,16 @@ export const getLikeListApi = async (postID) => {
     console.log(err);
   }
 };
+export const searchUserLikeApi = async (postID, q) => {
+  const headers = await config();
+  console.log({ postID, q });
+
+  try {
+    const { data } = await API.get(post/like/search/${postID}?q=${q}, {
+      headers,
+    });
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
