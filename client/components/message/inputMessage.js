@@ -16,7 +16,6 @@ import Icon4 from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector } from "react-redux";
 import { sendMessage } from "../../api/userApi";
 import { storage } from "../../firebase/config";
-import { useToast } from "react-native-toast-notifications";
 
 const InputMessage = ({
   selectedUserId,
@@ -25,7 +24,6 @@ const InputMessage = ({
   setLoadingImage,
   flatListRef,
 }) => {
-  const toast = useToast();
   const userLoggedId = useSelector((state) => state?.userState?.user?._id);
   const [message, setMessage] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);

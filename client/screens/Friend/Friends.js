@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -48,7 +48,7 @@ const Friends = ({ navigation }) => {
       authorID: selectedUserId,
     });
   };
-  const renderRequestFriend = ({ item }) => {
+  const renderRequestFriend = useCallback(({ item }) => {
     return (
       <View
         key={item._id}
@@ -126,7 +126,7 @@ const Friends = ({ navigation }) => {
         </View>
       </View>
     );
-  };
+  }, []);
 
   const handleNavigateToMessageScreen = async (item) => {
     const values = {
@@ -140,7 +140,7 @@ const Friends = ({ navigation }) => {
     navigation.navigate("Message", { data: values });
   };
 
-  const renderFriends = ({ item }) => {
+  const renderFriends = useCallback(({ item }) => {
     return (
       <View
         key={item._id}
@@ -218,7 +218,7 @@ const Friends = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     );
-  };
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       <View

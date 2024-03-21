@@ -1,27 +1,25 @@
+import { useFocusEffect } from "@react-navigation/native";
+import React, { Fragment, useEffect, useState } from "react";
 import {
+  FlatList,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TextInput,
-  SafeAreaView,
-  FlatList,
-  ScrollView,
   TouchableOpacity,
+  View,
 } from "react-native";
-import ImageCustom from "../../components/custom/imageCustom";
 import Icon from "react-native-vector-icons/AntDesign";
 import Icon2 from "react-native-vector-icons/Feather";
-import { useSelector, useDispatch } from "react-redux";
-import { Fragment, useEffect, useState } from "react";
-import { fetchChatApi, getFriends } from "../../api/userApi";
-import { setFriends } from "../../redux/user";
-import { useFocusEffect } from "@react-navigation/native";
-import React from "react";
+import { useSelector } from "react-redux";
+import { fetchChatApi } from "../../api/userApi";
+import ImageCustom from "../../components/custom/imageCustom";
+import socket from "../../utils/configSocket";
 const Chat = ({ navigation }) => {
   const handleNavigate = (item) => {
     navigation.navigate("Message", { data: item });
   };
-  const dispatch = useDispatch();
   const [chatUser, setChatUser] = useState([]);
   useEffect(() => {
     console.log("Chat screens");
@@ -31,14 +29,10 @@ const Chat = ({ navigation }) => {
         setChatUser(res.chatInfo);
       }
     };
-    // const getUserFriends = async () => {
-    //   const res = await getFriends();
-    //   if (res && res.success) {
-    //     dispatch(setFriends(res.friends));
-    //   }
-    // };
+    // socket.on("receiveMessage", () => {
+    //   fetchChat();
+    // });
     fetchChat();
-    // getUserFriends();
   }, []);
   useFocusEffect(
     React.useCallback(() => {

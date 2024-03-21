@@ -1,25 +1,24 @@
+import { useNavigation } from "@react-navigation/native";
+import { ResizeMode, Video } from "expo-av";
+import { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
-  View,
-  FlatList,
-  Dimensions,
-  RefreshControl,
   TouchableOpacity,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { useState, useEffect, memo } from "react";
-import ImageCustom from "../../components/custom/imageCustom";
-import Header from "../../components/search/header";
-import Footer from "../../components/footer";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getListImagesApi, getPostByUserIdApi } from "../../api/postApi";
-import { Video, ResizeMode } from "expo-av";
-import useDebounce from "../../hook/hooks";
-import Icon from "react-native-vector-icons/Entypo";
-import { searchUserApi } from "../../api/userApi";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { useNavigation } from "@react-navigation/native";
+import { getListImagesApi, getPostByUserIdApi } from "../../api/postApi";
+import { searchUserApi } from "../../api/userApi";
+import ImageCustom from "../../components/custom/imageCustom";
+import Footer from "../../components/footer";
+import Header from "../../components/search/header";
+import useDebounce from "../../hook/hooks";
 
 const screenWidth = Dimensions.get("screen").width;
 
@@ -30,6 +29,7 @@ const Search = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [invisible, setInvisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
 
   const [isEmpty, setIsEmpty] = useState(false);
@@ -123,19 +123,23 @@ const Search = () => {
   };
 
   const handleSearchUser = async () => {
+    setIsLoadingSearch(true);
     const req = await searchUserApi(debounceValue);
     if (req.success) {
       setSearchResult(req.users);
+      setIsLoadingSearch(false);
     }
   };
 
-  const renderListImage = ({ item, index }) => {
+  const renderListImage = useCallback(({ item, index }) => {
     const handleGotoDetailPost = async () => {
       const postData = await getDataPost();
-
+      const indexToScroll = postData.findIndex(
+        (element) => item._id === element._id
+      );
       navigation.navigate("DetailPost", {
         dataPersonal: postData,
-        index: index,
+        index: indexToScroll,
       });
     };
     const getDataPost = async () => {
@@ -159,7 +163,7 @@ const Search = () => {
           <View
             style={{
               width: screenWidth / 3,
-              height: 140,
+              height: screenWidth / 3,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -172,7 +176,7 @@ const Search = () => {
                   uri: item.assets[0].url,
                 }}
                 style={{
-                  height: 140,
+                  height: screenWidth / 3,
                   aspectRatio: 1,
                   width: screenWidth / 3,
                 }}
@@ -182,14 +186,42 @@ const Search = () => {
               <ImageCustom
                 source={{ uri: item.assets[0]?.url }}
                 resizeMode="cover"
-                style={{ height: 140, aspectRatio: 1, width: screenWidth / 3 }}
+                style={{
+                  height: screenWidth / 3,
+                  aspectRatio: 1,
+                  width: screenWidth / 3,
+                }}
               />
             )}
           </View>
         </View>
       </TouchableOpacity>
     );
-  };
+  }, []);
+
+  const renderHeader = useCallback(() => {
+    if (debounceValue) {
+      return (
+        <View
+          style={{
+            marginHorizontal: 20,
+            paddingVertical: 10,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <View style={styles.wrapIcon}>
+            <AntDesign name="search1" size={20} color="black" />
+          </View>
+          <View>
+            <Text>{debounceValue}</Text>
+          </View>
+        </View>
+      );
+    }
+    return null;
+  }, [isLoadingSearch]);
 
   const renderSearchResults = ({ item }) => {
     const handleGotoDetails = () => {
@@ -270,34 +302,16 @@ const Search = () => {
         />
       </View>
       <View style={styles.content}>
-        {isSearch && (
+        {isSearch && !isLoadingSearch && (
           <FlatList
             key={1}
             data={searchResult}
             renderItem={renderSearchResults}
             keyExtractor={(item) => item._id}
-            ListHeaderComponent={
-              debounceValue && (
-                <View
-                  style={{
-                    marginHorizontal: 20,
-                    paddingVertical: 10,
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <View style={styles.wrapIcon}>
-                    <AntDesign name="search1" size={20} color="black" />
-                  </View>
-                  <View>
-                    <Text>{debounceValue}</Text>
-                  </View>
-                </View>
-              )
-            }
+            ListHeaderComponent={renderHeader}
           />
         )}
+        {isLoadingSearch && isSearch && debounceValue && <ActivityIndicator />}
         {!isSearch && !invisible && (
           <FlatList
             key={2}
@@ -316,7 +330,12 @@ const Search = () => {
               />
             }
             ListFooterComponent={
-              loading && <ActivityIndicator size={"small"} />
+              loading && (
+                <ActivityIndicator
+                  size={"small"}
+                  style={{ marginVertical: 10 }}
+                />
+              )
             }
           />
         )}

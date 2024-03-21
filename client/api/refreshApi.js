@@ -1,5 +1,6 @@
 import axios from "axios";
-const BASE_URL = "https://metasocial-app.onrender.com/api";
+
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/api`;
 const API = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,

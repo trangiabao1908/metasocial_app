@@ -6,12 +6,11 @@ import {
 } from "../utils/processStore";
 import { Alert } from "react-native";
 import { config } from "../utils/configAxios";
-const BASE_URL = "https://metasocial-app.onrender.com/api";
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/api`;
 export const API = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
-
 export const registerApi = async (values) => {
   console.log("Register");
   try {

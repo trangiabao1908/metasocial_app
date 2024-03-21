@@ -62,12 +62,19 @@ const ListMessage = ({
     }, 100);
   }, [fetchMessage, _id]);
   useEffect(() => {
+    // flatListRef.current.scrollToEnd({ animated: false });
+    let scrollToEndMessage;
     if (messages.length > 0 && flatListRef.current && !loadingFetchMessage) {
-      setTimeout(() => {
+      scrollToEndMessage = setTimeout(() => {
         flatListRef.current.scrollToEnd({ animated: false });
-      }, 100);
+      }, 300);
       setLastMessageCreatedAt(messages[0]?.createdAt);
     }
+    return () => {
+      if (scrollToEndMessage) {
+        clearTimeout(scrollToEndMessage);
+      }
+    };
   }, [loadingMesasge]);
 
   useEffect(() => {
@@ -217,7 +224,7 @@ const ListMessage = ({
       style={styles.container}
       data={messages}
       keyExtractor={(item) => item?._id.toString()}
-      renderItem={({ item }) => renderListMessage({ item })}
+      renderItem={renderListMessage}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}

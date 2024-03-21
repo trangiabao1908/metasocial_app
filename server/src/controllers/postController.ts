@@ -512,6 +512,7 @@ const postController = {
       const post = await handlePost.getPostByID(id);
       if (!post?.disableComment) {
         const currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+        console.log(currentTime);
         const user = await User.findById(userId).select(
           "username picturePath _id"
         );

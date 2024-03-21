@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
-const socket = io("https://metasocial-app.onrender.com", {
+
+const socket = io(process.env.EXPO_PUBLIC_API_URL, {
   transports: ["websocket"],
   withCredentials: true,
 });

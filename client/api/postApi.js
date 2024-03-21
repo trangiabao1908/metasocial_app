@@ -20,7 +20,7 @@ export const getAllPostApi = async (updatedAt) => {
 };
 
 export const getListImagesApi = async (updatedAt) => {
-  console.log(updatedAt);
+  // console.log(updatedAt);
   // console.log({ page: page });
 
   const headers = await config();

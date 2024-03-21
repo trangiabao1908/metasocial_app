@@ -44,20 +44,13 @@ const Message = ({ navigation, route }) => {
     fetchMessage();
   }, []);
   useEffect(() => {
-    // socket.emit("chatId", data.chatId);
     socket.on("fetchChat", (newMessage) => {
-      let newMessageFormatted;
       if (newMessage.receiverId._id.toString() === userLoggedId.toString()) {
-        if (newMessage.message && newMessage.message.length > 15) {
-          newMessageFormatted = newMessage.message.substring(0, 15) + "...";
-        } else {
-          newMessageFormatted = newMessage.message;
-        }
         setMessages((prevMessages) => [...prevMessages, newMessage]);
         flatListRef.current
           ? setTimeout(
-              () => flatListRef.current.scrollToEnd({ animated: false }),
-              500
+              () => flatListRef.current.scrollToEnd({ animated: true }),
+              300
             )
           : {};
       }

@@ -41,20 +41,6 @@ const renderItems = ({ item, index }) => {
   );
 };
 
-// const getImage = async (imageUrl) => {
-//   let imageData = await getImageFromCache(JSON.stringify(imageUrl));
-//   if (!imageData) {
-//     console.log("Not in cache");
-//     // Image not in cache, download it
-//     const response = await fetch(imageUrl);
-//     imageData = await response.blob();
-//     saveImageToCache(JSON.stringify(imageUrl), imageData);
-//   } else {
-//     console.log("In Cache");
-//   }
-//   return imageData;
-// };
-
 const Post = ({
   author,
   title,

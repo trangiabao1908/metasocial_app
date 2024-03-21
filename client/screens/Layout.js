@@ -33,16 +33,18 @@ import { getToken } from "../utils/processStore.js";
 import { playSoundFromLocalFile, setAudioMode } from "../utils/soundMessage.js";
 import ChangePassword from "./ChangePassword/ChangePassword.js";
 import ForgotPassword from "./ForgotPassword/ForgotPassword.js";
+import LoadingScreen from "./LoadingScreen/LoadingScreen.js";
 
 const Stack = createNativeStackNavigator();
 export const Layout = () => {
   const isAuthenticated = useSelector(
     (state) => state.userState?.isAuthenticated
   );
+
   const userLoggedId = useSelector((state) => state.userState?.user?._id);
   const [userId, setUserId] = useState(null);
   const [accessToken, setAccessToken] = useState("");
-
+  const [isLoadingToken, setIsLoadingToken] = useState(true);
   const dispatch = useDispatch();
   const toast = useToast();
   const toastRef = useRef(null);
@@ -139,16 +141,25 @@ export const Layout = () => {
   }, [userId]);
   useEffect(() => {
     const getTokenFromStore = async () => {
-      const access_token = await getToken();
-      if (access_token) {
-        setAccessToken(access_token);
-      } else {
-        setAccessToken("");
+      try {
+        const access_token = await getToken();
+        if (access_token) {
+          setAccessToken(access_token);
+        } else {
+          setAccessToken("");
+        }
+      } catch (error) {
+        console.error("Error getting token:", error);
+      } finally {
+        setIsLoadingToken(false);
       }
     };
+
     getTokenFromStore();
   }, [isAuthenticated]);
-
+  if (isLoadingToken) {
+    return <LoadingScreen />;
+  }
   return (
     <NavigationContainer>
       <Stack.Navigator

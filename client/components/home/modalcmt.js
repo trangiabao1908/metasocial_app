@@ -23,6 +23,7 @@ import {
   getCommentPostApi,
   editReplyCommentApi,
   replyCommentApi,
+  getPostByUserIdApi,
 } from "../../api/postApi";
 import { useEffect, useState, useRef } from "react";
 import SwipeableView from "../custom/swipe";
@@ -30,6 +31,7 @@ import { useSelector } from "react-redux";
 import ImageCustom from "../custom/imageCustom";
 import { formatTime } from "../../utils/setTime";
 import { EventRegister } from "react-native-event-listeners";
+import { useNavigation } from "@react-navigation/native";
 
 const ModalComments = ({
   modalVisible,
@@ -49,6 +51,8 @@ const ModalComments = ({
   const [idTag, setIdTag] = useState("");
   const [idReply, setIdReply] = useState("");
   const [isEditReply, setIsEditReply] = useState(false);
+
+  const navigation = useNavigation();
 
   const editRef = useRef();
 
@@ -237,6 +241,14 @@ const ModalComments = ({
     setIsEditReply(false);
   };
 
+  const handleGoToPerScreen = (id) => {
+    navigation.navigate("Personal", {
+      type: "viewProfile",
+      authorID: id,
+    });
+    handleCloseModal();
+  };
+
   const renderComments = (item, index) => {
     return (
       <View key={item._id}>
@@ -265,12 +277,16 @@ const ModalComments = ({
                 // width: "80%",
               }}
             >
-              <ImageCustom
-                resizeMode="cover"
-                style={{ width: 40, height: 40 }}
-                type={"avatar"}
-                source={{ uri: item.user.picturePath }}
-              />
+              <TouchableOpacity
+                onPress={() => handleGoToPerScreen(item.user._id)}
+              >
+                <ImageCustom
+                  resizeMode="cover"
+                  style={{ width: 40, height: 40 }}
+                  type={"avatar"}
+                  source={{ uri: item.user.picturePath }}
+                />
+              </TouchableOpacity>
               <View
                 style={{
                   display: "flex",
@@ -371,12 +387,16 @@ const ModalComments = ({
                       // width: "80%",
                     }}
                   >
-                    <ImageCustom
-                      resizeMode="cover"
-                      style={{ width: 40, height: 40 }}
-                      type={"avatar"}
-                      source={{ uri: rep.user.picturePath }}
-                    />
+                    <TouchableOpacity
+                      onPress={() => handleGoToPerScreen(rep.user._id)}
+                    >
+                      <ImageCustom
+                        resizeMode="cover"
+                        style={{ width: 40, height: 40 }}
+                        type={"avatar"}
+                        source={{ uri: rep.user.picturePath }}
+                      />
+                    </TouchableOpacity>
                     <View
                       style={{
                         display: "flex",

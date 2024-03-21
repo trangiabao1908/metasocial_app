@@ -21,6 +21,7 @@ export const getToken = async () => {
 export const removeToken = async () => {
   try {
     await AsyncStorage.removeItem("accessToken");
+    await AsyncStorage.removeItem("cachedImages");
   } catch (err) {
     console.error(err);
   }
@@ -30,7 +31,7 @@ export const encryptRefreshToken = async (refreshToken) => {
   try {
     const encryptedRefreshToken = CryptoJS.AES.encrypt(
       refreshToken,
-      "encryptedRefreshTokenSecret"
+      process.env.EXPO_PUBLIC_ENCRYPTED_KEY
     ).toString();
     await AsyncStorage.setItem("refreshToken", encryptedRefreshToken);
   } catch (err) {
@@ -43,7 +44,7 @@ export const decryptRefreshToken = async () => {
     if (encryptedRefreshToken) {
       const bytes = CryptoJS.AES.decrypt(
         encryptedRefreshToken,
-        "encryptedRefreshTokenSecret"
+        process.env.EXPO_PUBLIC_ENCRYPTED_KEY
       );
       const decryptedRefreshToken = bytes.toString(CryptoJS.enc.Utf8);
       return decryptedRefreshToken;

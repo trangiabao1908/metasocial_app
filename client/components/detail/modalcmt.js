@@ -14,7 +14,7 @@ import {
 
 import Icon from "react-native-vector-icons/AntDesign";
 
-import { useHeaderHeight } from "@react-navigation/elements";
+import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import * as yup from "yup";
 import {
@@ -49,6 +49,8 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
   const editRef = useRef();
 
   const user = useSelector((state) => state.userState?.user);
+
+  const navigation = useNavigation();
 
   const validationSchema = yup.object().shape({
     comment: yup.string().max(100, ({ max }) => `Giới hạn là ${max} chữ`),
@@ -241,6 +243,14 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
     setIsEditReply(false);
   };
 
+  const handleGoToPerScreen = (id) => {
+    navigation.navigate("Personal", {
+      type: "viewProfile",
+      authorID: id,
+    });
+    handleCloseModal();
+  };
+
   const renderComments = (item, index) => {
     return (
       <View key={item._id}>
@@ -268,12 +278,16 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
                 // width: "80%",
               }}
             >
-              <ImageCustom
-                resizeMode="cover"
-                style={{ width: 40, height: 40 }}
-                type={"avatar"}
-                source={{ uri: item.user.picturePath }}
-              />
+              <TouchableOpacity
+                onPress={() => handleGoToPerScreen(item.user._id)}
+              >
+                <ImageCustom
+                  resizeMode="cover"
+                  style={{ width: 40, height: 40 }}
+                  type={"avatar"}
+                  source={{ uri: item.user.picturePath }}
+                />
+              </TouchableOpacity>
               <View
                 style={{
                   display: "flex",
@@ -374,12 +388,16 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
                       // width: "80%",
                     }}
                   >
-                    <ImageCustom
-                      resizeMode="cover"
-                      style={{ width: 40, height: 40 }}
-                      type={"avatar"}
-                      source={{ uri: rep.user.picturePath }}
-                    />
+                    <TouchableOpacity
+                      onPress={() => handleGoToPerScreen(rep.user._id)}
+                    >
+                      <ImageCustom
+                        resizeMode="cover"
+                        style={{ width: 40, height: 40 }}
+                        type={"avatar"}
+                        source={{ uri: rep.user.picturePath }}
+                      />
+                    </TouchableOpacity>
                     <View
                       style={{
                         display: "flex",

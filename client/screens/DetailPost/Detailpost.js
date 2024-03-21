@@ -84,17 +84,23 @@ const DetailPost = () => {
 
   useFocusEffect(
     useCallback(() => {
+      let scrollToIndexPost;
       if (
         !hasScrolled &&
         postData?.length > 0 &&
         index >= 0 &&
         index < postData?.length
       ) {
-        setTimeout(() => {
+        scrollToIndexPost = setTimeout(() => {
           setHasScrolled(true);
           scrollToIndex();
         }, 200);
       }
+      return () => {
+        if (scrollToIndexPost) {
+          clearTimeout(scrollToIndexPost);
+        }
+      };
     }, [postData, hasScrolled])
   );
 
@@ -114,7 +120,7 @@ const DetailPost = () => {
     });
   };
 
-  const renderPosts = ({ item, index }) => {
+  const renderPosts = useCallback(({ item, index }) => {
     let isLike = item.like?.filter((data) => data.user === userID);
 
     return (
@@ -130,12 +136,11 @@ const DetailPost = () => {
         disableComment={item.disableComment}
       />
     );
-  };
+  });
 
   return (
     <SafeAreaView style={style.container}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
-
       <View style={style.content}>
         <SafeAreaView>
           <FlatList

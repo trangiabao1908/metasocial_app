@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/Entypo";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,14 +20,10 @@ import Post from "../../components/home/post";
 import ListStories from "../../components/stories";
 import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
 
-// import { ref, listAll, getDownloadURL } from "firebase/storage";
-// import { storage } from "../../firebase/config";
-
 const storiesData = [
   {
     id: 1,
     name: "tptp.here",
-    // source: require("../../assets/icon_avatar.png"),
   },
 ];
 
@@ -65,22 +61,16 @@ const Home = ({ navigation, route }) => {
   const [updatedAt, setUpdatedAt] = useState("");
   const [clickCount, setClickCount] = useState(0);
   const clickTimer = useRef(null);
-
   const flatListRef = useRef();
-  const videoRef = useRef(null);
 
   useEffect(() => {
     setTimeout(onRefresh, 200);
-
     // socket.emit("userIdLogged", user);
-
     const eventListener = () => {
       console.log("get Post");
       onRefresh();
     };
-
     EventRegister.addEventListener("updatePostSuccess", eventListener);
-
     return () => {
       EventRegister.removeEventListener(eventListener);
 
@@ -130,7 +120,7 @@ const Home = ({ navigation, route }) => {
   };
 
   const handleRefreshing = async () => {
-    // console.log("Call API Refreshing");
+    console.log("Call API Refreshing");
     try {
       let query = "";
       dispatch(clearPost());
@@ -188,7 +178,7 @@ const Home = ({ navigation, route }) => {
     }
   };
 
-  const renderPosts = ({ item }) => {
+  const renderPosts = useCallback(({ item }) => {
     let isLike = item.like?.filter((data) => data.user === user);
 
     return (
@@ -204,7 +194,7 @@ const Home = ({ navigation, route }) => {
         disableComment={item.disableComment}
       />
     );
-  };
+  }, []);
 
   return (
     <SafeAreaView style={style.container}>
