@@ -4,6 +4,7 @@ import { persistor, store } from "./redux/store.js";
 
 import { useEffect } from "react";
 import { ToastProvider } from "react-native-toast-notifications";
+import { Platform } from "react-native";
 import CustomToast from "./components/custom/CustomToast.js";
 import { Layout } from "./screens/Layout.js";
 import { checkToken } from "./utils/processToken.js";
@@ -22,7 +23,7 @@ export default function App() {
       <PersistGate loading={null} persistor={persistor}>
         <ToastProvider
           placement="top"
-          offset={15}
+          offset={Platform.OS === "ios" ? 15 : 30}
           renderType={{
             custom_toast: (toast) => <CustomToast toast={toast} />,
           }}
