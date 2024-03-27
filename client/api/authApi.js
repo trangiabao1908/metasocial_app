@@ -101,5 +101,8 @@ export const resetPasswordAPI = async (values) => {
     }
   } catch (err) {
     Alert.alert("Thông Báo", err?.response?.data?.message);
+    if (err?.response?.data?.type) {
+      return err?.response?.data?.type;
+    }
   }
 };

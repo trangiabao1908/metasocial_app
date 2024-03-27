@@ -126,14 +126,15 @@ const authController = {
         },
         to: email,
         subject: "Email Reset Mật Khẩu",
-        text: `Đây là mã reset password của bạn: ${otp}. Hãy điền nó để tiếp tục tạo lại mật khẩu`,
+        text: `Đây là mã reset mật khẩu của bạn: ${otp}. Hãy điền nó để tiếp tục tạo lại mật khẩu
+        Lưu ý: Mã chỉ có thời hạn trong 5 phút kể từ khi bạn nhận được mail này!!!`,
       };
       transporter.sendMail(mailOptions, (error: Error | null, info: any) => {
         if (error) {
           console.log(error);
           return res.status(400).json({
             success: false,
-            message: "Gửi email thay đổi mật khẩu thất bại!!!",
+            message: "Gửi email tạo mới mật khẩu thất bại!!!",
           });
         } else {
           console.log("Email sent: " + info.response);
@@ -159,6 +160,18 @@ const authController = {
           .status(400)
           .json({ success: false, message: "Mã token không tồn tại" });
       }
+      const now = new Date();
+      const isValidToken =
+        (now.getTime() - findToken?.createdAt.getTime()) / (1000 * 60);
+      console.log(isValidToken);
+      if (isValidToken >= 5) {
+        await findToken?.deleteOne();
+        return res.status(400).json({
+          success: false,
+          message: "Token đã quá hạn sử dụng. Gửi lại mã mới?",
+          type: "again",
+        });
+      }
       const user = await User.findOne({ email: email });
       if (newPassword !== confirmNewPassword) {
         return res
@@ -175,7 +188,6 @@ const authController = {
       if (user) {
         user.password = hashPassword;
         await user.save();
-        // await token.remove();
       }
       await findToken.deleteOne();
       return res

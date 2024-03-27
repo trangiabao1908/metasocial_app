@@ -32,6 +32,7 @@ const ListMessage = ({
   const [showHeaderComponent, setShowHeaderComponent] = useState(false);
   const [lastMessageCreatedAt, setLastMessageCreatedAt] = useState(null);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [loadMore, setLoadMore] = useState(true);
   const handleShowTime = (messageId) => {
     if (selectedMessageId !== messageId || selectedMessageId === null) {
       setSelectedMessageId(messageId);
@@ -50,19 +51,22 @@ const ListMessage = ({
         const lastMessage = res?.messages[0];
         setLastMessageCreatedAt(lastMessage.createdAt);
       } else {
+        setLoadMore(false);
         setShowHeaderComponent(true);
       }
       setRefreshing(false);
     }
   };
   const handleGetPreMessage = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      fetchMessage(_id);
-    }, 100);
+    if (loadMore) {
+      console.log("Loading more...");
+      setRefreshing(true);
+      setTimeout(() => {
+        fetchMessage(_id);
+      }, 100);
+    }
   }, [fetchMessage, _id]);
   useEffect(() => {
-    // flatListRef.current.scrollToEnd({ animated: false });
     let scrollToEndMessage;
     if (messages.length > 0 && flatListRef.current && !loadingFetchMessage) {
       scrollToEndMessage = setTimeout(() => {

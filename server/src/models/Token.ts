@@ -4,6 +4,7 @@ import mongoose, { Schema, Document } from "mongoose";
 interface IToken extends Document {
   email: string;
   token: string;
+  createdAt: Date;
 }
 
 // Định nghĩa schema cho collection

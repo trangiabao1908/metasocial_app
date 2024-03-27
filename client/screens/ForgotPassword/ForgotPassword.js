@@ -43,6 +43,11 @@ const ForgotPassword = ({ navigation }) => {
       setShowChangePassword(false);
       setEmail("");
       navigation.navigate("Login");
+    } else if (res && res === "again") {
+      setShowChangePassword(false);
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setToken("");
     }
     setNewPassword("");
     setConfirmNewPassword("");
