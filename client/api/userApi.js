@@ -204,3 +204,14 @@ export const removeFriendAPI = async (selectedUserId) => {
     console.log(err.response?.data.message);
   }
 };
+export const openValidAPI = async () => {
+  try {
+    const headers = await config();
+    const res = await API.put(`/user/openValid`, {}, { headers: headers });
+    if (res?.data?.success) {
+      return res.data;
+    }
+  } catch (err) {
+    console.log(err.response?.data.message);
+  }
+};

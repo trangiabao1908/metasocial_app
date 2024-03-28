@@ -5,22 +5,24 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
+  Switch,
+  Alert,
 } from "react-native";
 import ImageCustom from "../custom/imageCustom";
 import { useSelector, useDispatch } from "react-redux";
-import { useState, useLayoutEffect } from "react";
+import { useState, useLayoutEffect, useCallback } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/AntDesign";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../firebase/config";
-import { updatedUserApi } from "../../api/userApi";
-import { updatedUser } from "../../redux/user";
+import { openValidAPI, updatedUserApi } from "../../api/userApi";
+import { setOpenValid, updatedUser } from "../../redux/user";
 import { EventRegister } from "react-native-event-listeners";
+import * as LocalAuthentication from "expo-local-authentication";
 
 const EditPer = ({ navigation }) => {
   const user = useSelector((state) => state?.userState?.user);
-
   const [avatar, setAvatar] = useState(user?.picturePath);
   const [username, setUsername] = useState(user?.username);
   const [displayName, setDisplayName] = useState(user?.displayName);
@@ -30,7 +32,7 @@ const EditPer = ({ navigation }) => {
   const [disableButton, setDisableButton] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigation();
-
+  let isMpinEnabled = user?.isAdmin;
   useLayoutEffect(() => {
     navigate.setOptions({
       headerRight: () => (
@@ -141,6 +143,34 @@ const EditPer = ({ navigation }) => {
   const handleChangePassword = () => {
     navigation.navigate("ChangePassword");
   };
+  const handleOpenValidAPI = useCallback(async () => {
+    const res = await openValidAPI();
+    if (res && res?.success) {
+      Alert.alert(res?.message);
+      dispatch(setOpenValid());
+    }
+  }, []);
+  const handleOpenValid = async () => {
+    const isAvailable = await LocalAuthentication.hasHardwareAsync();
+    if (isAvailable) {
+      const res = await LocalAuthentication.authenticateAsync();
+      if (res?.success) {
+        handleOpenValidAPI();
+      } else {
+        if (
+          res?.error === "not_enrolled" ||
+          res?.error === "passcode_not_set"
+        ) {
+          Alert.alert(
+            "Thông Báo",
+            "Bạn chưa cấu hình bảo mật trên thiết bị\nVui lòng cấu hình trước khi sử dụng tính năng này"
+          );
+        }
+      }
+    } else {
+      Alert.alert("Thông Báo", "Thiết bị không hổ trợ tính năng này");
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
@@ -175,7 +205,6 @@ const EditPer = ({ navigation }) => {
               borderBottomColor: "#EAEAEA",
               borderBottomWidth: 1,
               paddingVertical: 10,
-              //   backgroundColor: "red",
             }}
           >
             <TextInput
@@ -293,10 +322,9 @@ const EditPer = ({ navigation }) => {
           </Text>
         </View>
       </View>
-      <View>
+      <View style={{ borderBottomWidth: 1, borderBottomColor: "#EAEAEA" }}>
         <View
           style={{
-            borderBottomColor: "#EAEAEA",
             paddingVertical: 10,
             marginLeft: 15,
           }}
@@ -307,10 +335,9 @@ const EditPer = ({ navigation }) => {
         </View>
       </View>
       <TouchableOpacity onPress={handleChangePassword}>
-        <View>
+        <View style={{ borderBottomWidth: 1, borderBottomColor: "#EAEAEA" }}>
           <View
             style={{
-              borderBottomColor: "#EAEAEA",
               paddingVertical: 10,
               marginLeft: 15,
             }}
@@ -321,6 +348,26 @@ const EditPer = ({ navigation }) => {
           </View>
         </View>
       </TouchableOpacity>
+      <View
+        style={{
+          marginLeft: 15,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginTop: Platform.OS === "ios" ? 5 : 0,
+        }}
+      >
+        <Text style={[styles.fontSize_16, { color: "blue" }]}>
+          Bật xác thực mật mã
+        </Text>
+        <Switch
+          style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+          trackColor={{ false: "#767577", true: "#81b0ff" }}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={handleOpenValid}
+          value={isMpinEnabled}
+        />
+      </View>
     </View>
     //   )}
     // </Formik>

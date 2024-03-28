@@ -1,6 +1,8 @@
 import { useFocusEffect } from "@react-navigation/native";
-import React, { Fragment, useEffect, useState } from "react";
+import * as LocalAuthentication from "expo-local-authentication";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
   SafeAreaView,
   ScrollView,
@@ -15,11 +17,35 @@ import Icon2 from "react-native-vector-icons/Feather";
 import { useSelector } from "react-redux";
 import { fetchChatApi } from "../../api/userApi";
 import ImageCustom from "../../components/custom/imageCustom";
-import socket from "../../utils/configSocket";
 const Chat = ({ navigation }) => {
-  const handleNavigate = (item) => {
-    navigation.navigate("Message", { data: item });
-  };
+  const isOpenValid = useSelector((state) => state?.userState?.user?.isAdmin);
+  const handleNavigate = useCallback(
+    async (item) => {
+      try {
+        if (isOpenValid) {
+          const res = await LocalAuthentication.authenticateAsync();
+          if (res?.success) {
+            navigation.navigate("Message", { data: item });
+          } else {
+            if (
+              res?.error === "not_enrolled" ||
+              res?.error === "passcode_not_set"
+            ) {
+              Alert.alert(
+                "Thông Báo",
+                "Hãy cấu hình bảo mật của thiết bị để tiếp tục xem tin nhắn"
+              );
+            }
+          }
+        } else {
+          navigation.navigate("Message", { data: item });
+        }
+      } catch (error) {
+        console.error("Error navigating:", error);
+      }
+    },
+    [navigation]
+  );
   const [chatUser, setChatUser] = useState([]);
   useEffect(() => {
     console.log("Chat screens");
@@ -29,9 +55,6 @@ const Chat = ({ navigation }) => {
         setChatUser(res.chatInfo);
       }
     };
-    // socket.on("receiveMessage", () => {
-    //   fetchChat();
-    // });
     fetchChat();
   }, []);
   useFocusEffect(
@@ -47,7 +70,7 @@ const Chat = ({ navigation }) => {
   );
   const userFriends = useSelector((state) => state?.userState?.user?.friends);
   const userLoggedId = useSelector((state) => state?.userState?.user?._id);
-  const renderItems = ({ item }) => {
+  const renderItems = useCallback(({ item }) => {
     return (
       <Fragment>
         <View style={{ marginLeft: 20 }} key={item?._id}>
@@ -72,8 +95,8 @@ const Chat = ({ navigation }) => {
         </View>
       </Fragment>
     );
-  };
-  const renderChatUser = ({ item }) => {
+  }, []);
+  const renderChatUser = useCallback(({ item }) => {
     const { userInfo, lastMessage } = item;
     let messageFormatted = lastMessage.lastMessageFormatted;
     const isSender = lastMessage.senderId === userLoggedId;
@@ -142,7 +165,7 @@ const Chat = ({ navigation }) => {
         </TouchableOpacity>
       </Fragment>
     );
-  };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>

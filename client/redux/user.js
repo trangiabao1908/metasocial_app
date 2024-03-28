@@ -34,9 +34,18 @@ export const userSlice = createSlice({
     setNewFriends: (state, action) => {
       state.user.friends = action.payload.friends;
     },
+    setOpenValid: (state) => {
+      state.user.isAdmin = !state.user.isAdmin;
+    },
   },
 });
 
-export const { setLogin, setLogout, updatedUser, setFriends, setNewFriends } =
-  userSlice.actions;
+export const {
+  setLogin,
+  setLogout,
+  updatedUser,
+  setFriends,
+  setNewFriends,
+  setOpenValid,
+} = userSlice.actions;
 export default userSlice.reducer;

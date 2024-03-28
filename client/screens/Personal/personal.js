@@ -1,4 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
@@ -7,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPostByUserIdApi } from "../../api/postApi";
 import {
   acceptFriendRequestAPI,
-  getChatIdAPI,
   getFriends,
   getRequestFriendAPI,
   getSentFriendRequestAPI,
@@ -29,6 +29,7 @@ const Personal = ({}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const userID = useSelector((state) => state?.userState?.user?._id);
+  const isOpenValid = useSelector((state) => state?.userState?.user?.isAdmin);
   const [dataPersonal, setDataPersonal] = useState(null);
   const [user, setUser] = useState(null);
   const [isAuthor, setIsAuthor] = useState(false);
@@ -127,15 +128,36 @@ const Personal = ({}) => {
   };
 
   const handleNavigateToMessageScreen = async (item) => {
-    const values = {
-      userInfo: {
-        _id: item._id,
-        username: item.username,
-        picturePath: item.picturePath,
-        email: item.email,
-      },
-    };
-    navigation.navigate("Message", { data: values });
+    try {
+      const values = {
+        userInfo: {
+          _id: item._id,
+          username: item.username,
+          picturePath: item.picturePath,
+          email: item.email,
+        },
+      };
+      if (isOpenValid) {
+        const res = await LocalAuthentication.authenticateAsync();
+        if (res?.success) {
+          navigation.navigate("Message", { data: values });
+        } else {
+          if (
+            res?.error === "not_enrolled" ||
+            res?.error === "passcode_not_set"
+          ) {
+            Alert.alert(
+              "Thông Báo",
+              "Hãy cấu hình bảo mật của thiết bị để tiếp tục xem tin nhắn"
+            );
+          }
+        }
+      } else {
+        navigation.navigate("Message", { data: values });
+      }
+    } catch (error) {
+      console.error("Error navigating:", error);
+    }
   };
   const handleSendRequestFriend = async (selectedUserId) => {
     const res = await sendRequestFriend(selectedUserId);

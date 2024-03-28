@@ -13,12 +13,14 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
 import { acceptFriendRequestAPI, getRequestFriendAPI } from "../../api/userApi";
 import CustomButton from "../../components/custom/button";
+import * as LocalAuthentication from "expo-local-authentication";
 import ImageCustom from "../../components/custom/imageCustom";
 import { setFriends } from "../../redux/user";
 const Friends = ({ navigation }) => {
   const userLoggedId = useSelector((state) => state?.userState?.user?._id);
   const [friendsRequest, setFriendsRequest] = useState([]);
   const userFriends = useSelector((state) => state?.userState?.user?.friends);
+  const isOpenValid = useSelector((state) => state?.userState?.user?.isAdmin);
   const dispatch = useDispatch();
   const handleAcceptFriend = async (needAcceptedId) => {
     const res = await acceptFriendRequestAPI(needAcceptedId);
@@ -129,15 +131,36 @@ const Friends = ({ navigation }) => {
   }, []);
 
   const handleNavigateToMessageScreen = async (item) => {
-    const values = {
-      userInfo: {
-        _id: item._id,
-        username: item.username,
-        picturePath: item.picturePath,
-        email: item.email,
-      },
-    };
-    navigation.navigate("Message", { data: values });
+    try {
+      const values = {
+        userInfo: {
+          _id: item._id,
+          username: item.username,
+          picturePath: item.picturePath,
+          email: item.email,
+        },
+      };
+      if (isOpenValid) {
+        const res = await LocalAuthentication.authenticateAsync();
+        if (res?.success) {
+          navigation.navigate("Message", { data: values });
+        } else {
+          if (
+            res?.error === "not_enrolled" ||
+            res?.error === "passcode_not_set"
+          ) {
+            Alert.alert(
+              "Thông Báo",
+              "Hãy cấu hình bảo mật của thiết bị để tiếp tục xem tin nhắn"
+            );
+          }
+        }
+      } else {
+        navigation.navigate("Message", { data: values });
+      }
+    } catch (error) {
+      console.error("Error navigating:", error);
+    }
   };
 
   const renderFriends = useCallback(({ item }) => {

@@ -714,6 +714,34 @@ const userController = {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  openValid: async (req: Request, res: Response) => {
+    try {
+      let type;
+      const userLoggedId = req?.user?.userId;
+      const user = await User.findById(userLoggedId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Người dùng không tồn tại" });
+      }
+      if (user.isAdmin === true) {
+        user.isAdmin = false;
+        type = "Tắt";
+      } else {
+        user.isAdmin = true;
+        type = "Bật";
+      }
+      await user.save();
+      return res
+        .status(201)
+        .json({
+          success: true,
+          message: `${type} xác thực mật mã thành công.`,
+        });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  },
 };
 
 export default userController;

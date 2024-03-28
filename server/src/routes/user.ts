@@ -72,4 +72,7 @@ router.post(
 // Search User
 router.get("/search", middlewareAuth.verifyToken, userController.findUser);
 
+//Open Valid
+router.put("/openValid", middlewareAuth.verifyToken, userController.openValid);
+
 export default router;

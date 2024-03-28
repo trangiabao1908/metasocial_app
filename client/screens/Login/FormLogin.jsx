@@ -1,4 +1,6 @@
+import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
+import * as React from "react";
 import {
   Pressable,
   StyleSheet,
@@ -7,12 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import * as React from "react";
-import * as yup from "yup";
-import { registerApi, loginApi } from "../../api/authApi";
 import { useDispatch } from "react-redux";
+import * as yup from "yup";
+import { loginApi, registerApi } from "../../api/authApi";
 import { setLogin } from "../../redux/user.js";
-import { useNavigation } from "@react-navigation/native";
+
 // define login schema
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -79,7 +80,7 @@ const FormLogin = () => {
                   style={[styles.defaultSizeText, styles.textInput]}
                   onChangeText={handleChange("username")}
                   onBlur={handleBlur("username")}
-                  placeholder="Username"
+                  placeholder="Tên người dùng"
                   value={values.username}
                 />
                 {touched.username && errors.username && (
@@ -110,7 +111,7 @@ const FormLogin = () => {
                 ]}
                 onChangeText={handleChange("password")}
                 onBlur={handleBlur("password")}
-                placeholder="Password"
+                placeholder="Mật khẩu"
                 value={values.password}
                 secureTextEntry
               ></TextInput>
@@ -127,7 +128,7 @@ const FormLogin = () => {
                     ]}
                     onChangeText={handleChange("confirmpassword")}
                     onBlur={handleBlur("confirmpassword")}
-                    placeholder="Confirm Password"
+                    placeholder="Xác nhận mật khẩu"
                     value={values.confirmpassword}
                     secureTextEntry
                   ></TextInput>
@@ -142,9 +143,10 @@ const FormLogin = () => {
             <View>
               <TouchableOpacity style={styles.btnLogin} onPress={handleSubmit}>
                 <Text style={styles.loginText}>
-                  {isLoginPage ? "LOGIN" : "REGISTER"}
+                  {isLoginPage ? "ĐĂNG NHẬP" : "ĐĂNG KÝ"}
                 </Text>
               </TouchableOpacity>
+
               <View>
                 <Pressable
                   onPress={() => {
