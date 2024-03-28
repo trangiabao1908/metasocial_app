@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import { Text, View, TouchableOpacity, Alert } from "react-native";
 import { formatTime } from "../../utils/setTime";
 import { getPostByUserIdApi } from "../../api/postApi";
@@ -8,7 +8,7 @@ import ImageCustom from "../custom/imageCustom";
 const ContentNotification = ({ item }) => {
   const navigation = useNavigation();
 
-  const getDataPost = async () => {
+  const getDataPost = useCallback(async () => {
     let type = "viewProfile";
     let id = item.post?.author;
     if (id) {
@@ -19,9 +19,9 @@ const ContentNotification = ({ item }) => {
     } else {
       Alert.alert("Người dùng đã xóa bài viết này.");
     }
-  };
+  }, []);
 
-  const handleGotoDetailPost = async () => {
+  const handleGotoDetailPost = useCallback(async () => {
     const postData = await getDataPost();
     const index = postData.findIndex((data) => data._id === item?.post?._id);
     if (index !== -1) {
@@ -30,14 +30,14 @@ const ContentNotification = ({ item }) => {
         index: index,
       });
     }
-  };
+  }, []);
 
-  const handleGotoPer = (selectedUserId) => {
+  const handleGotoPer = useCallback((selectedUserId) => {
     navigation.navigate("Personal", {
       type: "viewProfile",
       authorID: selectedUserId,
     });
-  };
+  }, []);
 
   return (
     <TouchableOpacity

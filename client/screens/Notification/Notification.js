@@ -14,8 +14,9 @@ const Notification = () => {
   const [noticesToday, setNoticesToday] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastedNotice, setLastedNotice] = useState("");
-  const [firstTime, setfirstTime] = useState(true);
-  const [isEndReached, setIsEndReached] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(false);
+  // const [isEndReached, setIsEndReached] = useState(false);
+
   const getNotification = useCallback(async () => {
     setLoading(true);
     try {
@@ -24,7 +25,10 @@ const Notification = () => {
         setNoticesToday(req?.noticesToday);
         const latedNoti = req?.noticesToday[req?.noticesToday?.length - 1];
         setLastedNotice(latedNoti?.updatedAt);
-        setfirstTime(false);
+        if (req.isLastElement) {
+          setIsEmpty(true);
+        }
+        // setfirstTime(false);
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -35,36 +39,50 @@ const Notification = () => {
   useEffect(() => {
     getNotification();
   }, []);
-  // const handleGetMoreNotice = useCallback(async () => {
-  //   if (!firstTime && !loading && noticesToday.length > 0 && !isEndReached) {
-  //     console.log("abc");
-  //     setIsEndReached(true);
-  //     try {
-  //       const req = await getNotificationApi(lastedNotice);
-  //       if (req) {
-  //         const newNotices = req?.noticesToday || [];
-  //         setNoticesToday((prevNotices) => [...prevNotices, ...newNotices]);
-  //         const latedNoti = newNotices[newNotices.length - 1];
-  //         setLastedNotice(latedNoti ? latedNoti.updatedAt : null);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching more notifications:", error);
-  //     } finally {
-  //       setIsEndReached(false);
-  //     }
-  //   }
-  // }, []);
+
+  const handleGetMoreNotice = useCallback(async () => {
+    console.log({ lastedNotice });
+    if (noticesToday.length > 0 && lastedNotice) {
+      // setIsEndReached(true);
+      try {
+        const req = await getNotificationApi(lastedNotice);
+        if (req) {
+          const newNotices = req?.noticesToday || [];
+          setNoticesToday((prevNotices) => [...prevNotices, ...newNotices]);
+          const latedNoti = newNotices[newNotices.length - 1];
+          setLastedNotice(latedNoti.updatedAt);
+          if (req.isLastElement) {
+            setIsEmpty(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching more notifications:", error);
+      } finally {
+        // setIsEndReached(false);
+        setLoading(false);
+      }
+    }
+  }, [lastedNotice]);
 
   const renderNotifications = useCallback(({ item }) => {
     return <ContentNotification item={item} />;
   }, []);
+
+  const handleEndReached = () => {
+    // console.log("end");
+    // console.log({ lastedNotice });
+
+    if (!loading && !isEmpty) {
+      handleGetMoreNotice();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       {loading ? (
         <ActivityIndicator size={"small"} />
       ) : (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, marginBottom: 50 }}>
           {noticesToday.length > 0 && (
             <FlatList
               style={{ flex: 1 }}
@@ -72,6 +90,9 @@ const Notification = () => {
               renderItem={renderNotifications}
               keyExtractor={(item) => item?._id.toString()}
               ListHeaderComponent={<HeaderComponent2 />}
+              onEndReached={handleEndReached}
+              // onEndReachedThreshold={0.1}
+              // onScroll={handleScroll}
             />
           )}
         </View>

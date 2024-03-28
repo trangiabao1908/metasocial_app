@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -52,7 +52,7 @@ const Personal = ({}) => {
     }
     if (type) {
       getDataPersonal();
-      console.log("call again");
+      // console.log("call again");
       const eventListener = () => {
         EventRegister.addEventListener("onSuccessUpdatedUser", getDataPersonal);
       };
@@ -64,7 +64,7 @@ const Personal = ({}) => {
         );
       };
     }
-  }, [type]);
+  }, [type, route]);
   const getFriendsRequest = async () => {
     const res = await getRequestFriendAPI(userID);
     if (res && res.success) {
@@ -91,7 +91,7 @@ const Personal = ({}) => {
       socket.off("setTitle");
     };
   }, []);
-  const getDataPersonal = async () => {
+  const getDataPersonal = useCallback(async () => {
     let id = "";
     if (type === "viewProfile") {
       id = route.params?.authorID;
@@ -104,7 +104,7 @@ const Personal = ({}) => {
       setDataPersonal(req.data);
       setUser(req.user);
     }
-  };
+  }, [route]);
 
   const friends = useSelector((state) => state?.userState?.user?.friends);
   const isFriend = friends?.find(
