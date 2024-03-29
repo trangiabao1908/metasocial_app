@@ -5,6 +5,7 @@ import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useDispatch, useSelector } from "react-redux";
 import { getPostByUserIdApi } from "../../api/postApi";
+import * as LocalAuthentication from "expo-local-authentication";
 import {
   acceptFriendRequestAPI,
   getChatIdAPI,
@@ -127,15 +128,36 @@ const Personal = ({}) => {
   };
 
   const handleNavigateToMessageScreen = async (item) => {
-    const values = {
-      userInfo: {
-        _id: item._id,
-        username: item.username,
-        picturePath: item.picturePath,
-        email: item.email,
-      },
-    };
-    navigation.navigate("Message", { data: values });
+    try {
+      const values = {
+        userInfo: {
+          _id: item._id,
+          username: item.username,
+          picturePath: item.picturePath,
+          email: item.email,
+        },
+      };
+      if (isOpenValid) {
+        const res = await LocalAuthentication.authenticateAsync();
+        if (res?.success) {
+          navigation.navigate("Message", { data: values });
+        } else {
+          if (
+            res?.error === "not_enrolled" ||
+            res?.error === "passcode_not_set"
+          ) {
+            Alert.alert(
+              "Thông Báo",
+              "Hãy cấu hình bảo mật của thiết bị để tiếp tục xem tin nhắn"
+            );
+          }
+        }
+      } else {
+        navigation.navigate("Message", { data: values });
+      }
+    } catch (error) {
+      console.error("Error navigating:", error);
+    }
   };
   const handleSendRequestFriend = async (selectedUserId) => {
     const res = await sendRequestFriend(selectedUserId);
