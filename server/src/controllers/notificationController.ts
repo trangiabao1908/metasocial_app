@@ -11,7 +11,7 @@ const notificationController = {
       if (updatedAt) {
         query = { updatedAt: { $lt: updatedAt } };
       }
-      const limitNotice = 10;
+      const limitNotice = 11;
       console.log(query);
       const notices = await Notification.find({
         receiver: userId,

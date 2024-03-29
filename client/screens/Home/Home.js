@@ -17,38 +17,8 @@ import { getAllPostApi } from "../../api/postApi";
 import PostSkeleton from "../../components/custom/skeleton";
 import Footer from "../../components/footer";
 import Post from "../../components/home/post";
-import ListStories from "../../components/stories";
 import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
-
-const storiesData = [
-  {
-    id: 1,
-    name: "tptp.here",
-  },
-];
-
-const HeaderContent = () => {
-  const renderListStories = ({ item }) => {
-    return <ListStories name={item.name} source={item.source} id={item.id} />;
-  };
-  return (
-    <SafeAreaView
-      style={{
-        borderBottomColor: "rgb(219, 219, 219)",
-        borderBottomWidth: 0.5,
-      }}
-    >
-      <FlatList
-        data={storiesData}
-        renderItem={renderListStories}
-        keyExtractor={(item) => item.id}
-        horizontal
-        initialScrollIndex={0}
-        showsHorizontalScrollIndicator={false}
-      />
-    </SafeAreaView>
-  );
-};
+import HeaderComponent from "./HeaderComponent";
 
 const Home = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -58,6 +28,7 @@ const Home = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
+  const [state, setState] = useState(false);
   const [updatedAt, setUpdatedAt] = useState("");
   const [clickCount, setClickCount] = useState(0);
   const clickTimer = useRef(null);
@@ -179,8 +150,7 @@ const Home = ({ navigation, route }) => {
   };
 
   const renderPosts = useCallback(({ item }) => {
-    let isLike = item.like?.filter((data) => data.user === user);
-
+    let isLike = item.like?.findIndex((data) => data.user === user);
     return (
       <Post
         id={item._id}
@@ -189,7 +159,7 @@ const Home = ({ navigation, route }) => {
         assets={item.assets}
         like={item.like}
         comment={item.comment}
-        isLike={isLike.length ? true : false}
+        isLike={isLike !== -1 ? true : false}
         updatedAt={item.createdAt}
         disableComment={item.disableComment}
       />
@@ -199,7 +169,6 @@ const Home = ({ navigation, route }) => {
   return (
     <SafeAreaView style={style.container}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
-
       <View style={style.content}>
         <SafeAreaView>
           {refreshing ? (
@@ -213,7 +182,7 @@ const Home = ({ navigation, route }) => {
               scrollEventThrottle={16}
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.1}
-              ListHeaderComponent={<HeaderContent />}
+              ListHeaderComponent={<HeaderComponent />}
               ListFooterComponent={
                 isEmpty ? (
                   <View

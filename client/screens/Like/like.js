@@ -97,7 +97,6 @@ const LikeScreen = ({ navigation }) => {
               flexDirection: "row",
               alignItems: "center",
               marginLeft: 20,
-              width: "65%",
             }}
           >
             <ImageCustom

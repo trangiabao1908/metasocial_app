@@ -1,6 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import * as LocalAuthentication from "expo-local-authentication";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -8,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPostByUserIdApi } from "../../api/postApi";
 import {
   acceptFriendRequestAPI,
+  getChatIdAPI,
   getFriends,
   getRequestFriendAPI,
   getSentFriendRequestAPI,
@@ -29,7 +29,6 @@ const Personal = ({}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const userID = useSelector((state) => state?.userState?.user?._id);
-  const isOpenValid = useSelector((state) => state?.userState?.user?.isAdmin);
   const [dataPersonal, setDataPersonal] = useState(null);
   const [user, setUser] = useState(null);
   const [isAuthor, setIsAuthor] = useState(false);
@@ -53,7 +52,7 @@ const Personal = ({}) => {
     }
     if (type) {
       getDataPersonal();
-      console.log("call again");
+      // console.log("call again");
       const eventListener = () => {
         EventRegister.addEventListener("onSuccessUpdatedUser", getDataPersonal);
       };
@@ -65,7 +64,7 @@ const Personal = ({}) => {
         );
       };
     }
-  }, [type]);
+  }, [type, route]);
   const getFriendsRequest = async () => {
     const res = await getRequestFriendAPI(userID);
     if (res && res.success) {
@@ -92,7 +91,7 @@ const Personal = ({}) => {
       socket.off("setTitle");
     };
   }, []);
-  const getDataPersonal = async () => {
+  const getDataPersonal = useCallback(async () => {
     let id = "";
     if (type === "viewProfile") {
       id = route.params?.authorID;
@@ -105,14 +104,14 @@ const Personal = ({}) => {
       setDataPersonal(req.data);
       setUser(req.user);
     }
-  };
+  }, [route]);
 
   const friends = useSelector((state) => state?.userState?.user?.friends);
-  const isFriend = friends?.find(
+  const isFriend = friends?.findIndex(
     (friend) => friend._id === route?.params?.authorID
   );
 
-  const isNeedAccept = friendsRequest?.find(
+  const isNeedAccept = friendsRequest?.findIndex(
     (friend) => friend._id === route?.params?.authorID
   );
 
@@ -128,36 +127,15 @@ const Personal = ({}) => {
   };
 
   const handleNavigateToMessageScreen = async (item) => {
-    try {
-      const values = {
-        userInfo: {
-          _id: item._id,
-          username: item.username,
-          picturePath: item.picturePath,
-          email: item.email,
-        },
-      };
-      if (isOpenValid) {
-        const res = await LocalAuthentication.authenticateAsync();
-        if (res?.success) {
-          navigation.navigate("Message", { data: values });
-        } else {
-          if (
-            res?.error === "not_enrolled" ||
-            res?.error === "passcode_not_set"
-          ) {
-            Alert.alert(
-              "Thông Báo",
-              "Hãy cấu hình bảo mật của thiết bị để tiếp tục xem tin nhắn"
-            );
-          }
-        }
-      } else {
-        navigation.navigate("Message", { data: values });
-      }
-    } catch (error) {
-      console.error("Error navigating:", error);
-    }
+    const values = {
+      userInfo: {
+        _id: item._id,
+        username: item.username,
+        picturePath: item.picturePath,
+        email: item.email,
+      },
+    };
+    navigation.navigate("Message", { data: values });
   };
   const handleSendRequestFriend = async (selectedUserId) => {
     const res = await sendRequestFriend(selectedUserId);
@@ -278,13 +256,17 @@ const Personal = ({}) => {
               {type === "viewProfile" && !isAuthor ? (
                 <CustomButton
                   title={
-                    isFriend ? "Hủy kết bạn" : isNeedAccept ? "Xác nhận" : title
+                    isFriend !== -1
+                      ? "Hủy kết bạn"
+                      : isNeedAccept !== -1
+                      ? "Xác nhận"
+                      : title
                   }
                   styleText={{ fontWeight: "500" }}
                   onPress={() => {
-                    isFriend
+                    isFriend !== -1
                       ? handleRemoveFriend(route?.params?.authorID)
-                      : isNeedAccept
+                      : isNeedAccept !== -1
                       ? handleAcceptFriend(route?.params?.authorID)
                       : handleSendRequestFriend(route?.params?.authorID);
                   }}
@@ -424,7 +406,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   link: {
-    color: "rgb(0, 55, 107)", // Màu chữ của link
+    color: "rgb(0, 55, 107)",
     fontWeight: "bold",
   },
 

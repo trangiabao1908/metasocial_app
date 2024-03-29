@@ -114,7 +114,6 @@ const Search = () => {
   };
 
   const handleEndReached = () => {
-    console.log("test");
     if (!loading && !isEmpty && !isFirstTime) {
       console.log("reached");
       setLoading(true);

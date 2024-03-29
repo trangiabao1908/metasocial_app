@@ -1,12 +1,12 @@
-import { SafeAreaView, View, StyleSheet, Text, Image } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import React, { memo } from "react";
 
 import ImageCustom from "./custom/imageCustom";
 
-const ListStories = ({ name, id }) => {
+const ListStories = () => {
   return (
-    <View style={stories.container} key={id}>
+    <View style={stories.container}>
       <View style={stories.flexItem}>
         <View style={[stories.content2]}>
           <ImageCustom

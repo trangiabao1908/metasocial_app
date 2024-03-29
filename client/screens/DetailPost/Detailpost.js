@@ -72,7 +72,6 @@ const DetailPost = () => {
 
   useEffect(() => {
     getDataPersonal();
-
     const eventListener = () => {
       EventRegister.addEventListener("onSuccessUpdatePost", getDataPersonal);
     };
@@ -80,7 +79,7 @@ const DetailPost = () => {
     return () => {
       EventRegister.removeEventListener("onSuccessUpdatePost", getDataPersonal);
     };
-  }, []);
+  }, [route]);
 
   useFocusEffect(
     useCallback(() => {
@@ -104,14 +103,14 @@ const DetailPost = () => {
     }, [postData, hasScrolled])
   );
 
-  const getDataPersonal = async () => {
+  const getDataPersonal = useCallback(async () => {
     let type = "viewProfile";
     let id = data[0].author._id;
     const req = await getPostByUserIdApi(id, type);
     if (req.success) {
       setPostData(req.data);
     }
-  };
+  }, [route]);
 
   const scrollToIndex = () => {
     flatListRef.current.scrollToIndex({
