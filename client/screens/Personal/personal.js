@@ -35,7 +35,7 @@ const Personal = ({}) => {
   const [isAuthor, setIsAuthor] = useState(false);
   const [title, setTitle] = useState("Thêm bạn bè");
   const [friendsRequest, setFriendsRequest] = useState([]);
-
+  const isOpenValid = useSelector((state) => state?.userState?.user?.isAdmin);
   useLayoutEffect(() => {
     if (type === "viewProfile") {
       navigation.setOptions({
