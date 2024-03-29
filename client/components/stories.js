@@ -3,8 +3,13 @@ import { StyleSheet, Text, View } from "react-native";
 import React, { memo } from "react";
 
 import ImageCustom from "./custom/imageCustom";
+import { useSelector } from "react-redux";
 
 const ListStories = () => {
+  const userAvatart = useSelector(
+    (state) => state?.userState?.user?.picturePath
+  );
+
   return (
     <View style={stories.container}>
       <View style={stories.flexItem}>
@@ -14,7 +19,7 @@ const ListStories = () => {
             resizeMode="cover"
             type="avatar"
             source={{
-              uri: "https://firebasestorage.googleapis.com/v0/b/meta-social-app-db279.appspot.com/o/6528efdc09df8502aff05b64%2Favatar%2Fimage%2F1710443961624?alt=media&token=9a7a8ec6-707b-4d1f-9324-a1b3865386fb",
+              uri: userAvatart,
             }}
           />
         </View>
