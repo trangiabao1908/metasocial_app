@@ -28,7 +28,6 @@ const Home = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
-  const [state, setState] = useState(false);
   const [updatedAt, setUpdatedAt] = useState("");
   const [clickCount, setClickCount] = useState(0);
   const clickTimer = useRef(null);
@@ -36,7 +35,6 @@ const Home = ({ navigation, route }) => {
 
   useEffect(() => {
     setTimeout(onRefresh, 200);
-    // socket.emit("userIdLogged", user);
     const eventListener = () => {
       console.log("get Post");
       onRefresh();
@@ -44,7 +42,6 @@ const Home = ({ navigation, route }) => {
     EventRegister.addEventListener("updatePostSuccess", eventListener);
     return () => {
       EventRegister.removeEventListener(eventListener);
-
       console.log("Exit");
     };
   }, []);
@@ -151,6 +148,7 @@ const Home = ({ navigation, route }) => {
 
   const renderPosts = useCallback(({ item }) => {
     let isLike = item.like?.findIndex((data) => data.user === user);
+
     return (
       <Post
         id={item._id}
@@ -178,6 +176,7 @@ const Home = ({ navigation, route }) => {
               data={postData}
               ref={flatListRef}
               renderItem={renderPosts}
+              keyExtractor={(item) => item?._id}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={16}
               onEndReached={handleEndReached}

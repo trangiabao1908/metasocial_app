@@ -9,7 +9,6 @@ const widthScreen = Dimensions.get("screen").width;
 const ImageVideoPost = ({ selectedImages, isListImage, isNew }) => {
   const route = useRoute();
   const type = route.params.type;
-
   const renderImageVideo = ({ item }) => {
     return (
       <ImageCustom
@@ -39,7 +38,7 @@ const ImageVideoPost = ({ selectedImages, isListImage, isNew }) => {
           scrollEnabled={false}
           numColumns={2}
           data={selectedImages}
-          keyExtractor={(item) => item.uri}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={renderImageVideo}
         />
       )}

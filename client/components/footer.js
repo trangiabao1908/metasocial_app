@@ -5,17 +5,16 @@ import Icon3 from "react-native-vector-icons/Entypo";
 import Icon4 from "react-native-vector-icons/FontAwesome";
 import Icon5 from "react-native-vector-icons/Ionicons";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ImageCustom from "./custom/imageCustom";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Footer = ({
-  navigation,
-  isActive,
-
-  handleClick,
-}) => {
+const Footer = ({ navigation, isActive, handleClick }) => {
   const user = useSelector((state) => state?.userState.user);
+  handleNavigateCreatePost = useCallback(() => {
+    console.log("aha");
+    navigation.navigate("Post", { type: "post", data: {} });
+  }, []);
 
   return (
     <SafeAreaView
@@ -79,7 +78,7 @@ const Footer = ({
         iconStyle={{
           marginRight: 0,
         }}
-        onPress={() => navigation.navigate("Post", { type: "post", data: {} })}
+        onPress={handleNavigateCreatePost}
       />
       <Icon2.Button
         name="users"

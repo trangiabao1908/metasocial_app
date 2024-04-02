@@ -1,17 +1,16 @@
 import {
-  Pressable,
+  Alert,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
-  Alert,
   View,
-  Platform,
 } from "react-native";
 
-import { useState, useEffect } from "react";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import * as ImagePicker from "expo-image-picker";
 import { useRoute } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import { useEffect } from "react";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 
 const dataRender = [
   {

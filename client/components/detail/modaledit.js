@@ -1,28 +1,21 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  Modal,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { EventRegister } from "react-native-event-listeners";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import Icon2 from "react-native-vector-icons/Feather";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import Icon2 from "react-native-vector-icons/Feather";
+import { useDispatch } from "react-redux";
 import {
   deletePostApi,
   getPostByUserIdApi,
   hideCommentApi,
 } from "../../api/postApi";
 import { deletePostRD } from "../../redux/post";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigation } from "@react-navigation/native";
-import { EventRegister } from "react-native-event-listeners";
-import { useEffect, useState } from "react";
 
 const ModalEdit = ({
   modalEditVisible,

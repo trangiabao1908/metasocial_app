@@ -27,8 +27,8 @@ const ModalEdit = ({
   const handleDeletePost = async () => {
     const del = await deletePostApi(postID);
     if (del.status) {
-      EventRegister.emit("updatePostSuccess");
-      EventRegister.emit("onSuccessUpdatePost");
+      // EventRegister.emit("updatePostSuccess");
+      // EventRegister.emit("onSuccessUpdatePost");
       console.log("Success");
       dispatch(deletePostRD(postID));
       handleCloseModalEdit();
@@ -43,9 +43,8 @@ const ModalEdit = ({
 
   const handleOpenUpdatePost = () => {
     let dataUpdate = getPostByID(postID);
-
+    console.log(dataUpdate);
     navigation.navigate("Post", { dataUpdate: dataUpdate, type: "update" });
-
     handleCloseModalEdit();
   };
 

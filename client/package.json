@@ -19,6 +19,7 @@
     "core-js": "^3.36.0",
     "expo": "^50.0.11",
     "expo-av": "^13.10.5",
+    "expo-blur": "^12.9.2",
     "expo-image": "^1.10.6",
     "expo-image-picker": "^14.7.1",
     "expo-local-authentication": "^13.8.0",

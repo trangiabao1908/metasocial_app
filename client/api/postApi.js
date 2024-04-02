@@ -75,7 +75,6 @@ export const updatePostApi = async (values, arrayData, postID) => {
     title: values.title,
     assets: arrayData,
   };
-  console.log(arrayData);
   try {
     console.log(`/post/update/${postID}/`);
     const { data } = await API.put(`/post/update/${postID}/`, optionData, {

@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { Video } from "expo-av";
-import React, { memo, useState } from "react";
+import { ImageBackground } from "expo-image";
+import React, { memo, useCallback, useState } from "react";
 import {
   Dimensions,
   SafeAreaView,
@@ -9,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { EventRegister } from "react-native-event-listeners";
 import { SwiperFlatList } from "react-native-swiper-flatlist";
 import Icon2 from "react-native-vector-icons/AntDesign";
 import Icon from "react-native-vector-icons/Entypo";
@@ -21,25 +23,7 @@ import ImageCustom from "../custom/imageCustom";
 import ModalComments from "./modalcmt";
 import ModalEdit from "./modaledit";
 
-import { EventRegister } from "react-native-event-listeners";
-
 const screenWidth = Dimensions.get("window").width;
-
-const renderItems = ({ item, index }) => {
-  return (
-    <ImageCustom
-      key={index}
-      source={{
-        // uri: getImage(item.url),
-        uri: item.url,
-      }}
-      resizeMode="cover"
-      style={{
-        width: screenWidth,
-      }}
-    />
-  );
-};
 
 const Post = ({
   author,
@@ -56,7 +40,7 @@ const Post = ({
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalEditVisible, setModalEditVisible] = useState(false);
-
+  const [isBlurred, setIsBlurred] = useState(true);
   const [lengthComments, setLengthComments] = useState(comment.length);
 
   const dispatch = useDispatch();
@@ -104,6 +88,42 @@ const Post = ({
       authorID: author._id,
     });
   };
+  const handleToggleBlur = useCallback(() => {
+    setIsBlurred((prevIsBlurred) => !prevIsBlurred);
+  }, []);
+  const renderImageItem = useCallback(
+    ({ item, index }) =>
+      item && item.notSafe ? (
+        <TouchableOpacity
+          onPress={handleToggleBlur}
+          key={index}
+          activeOpacity={1}
+        >
+          <ImageBackground
+            source={{ uri: item.url }}
+            style={{ width: screenWidth, aspectRatio: 4 / 3 }}
+            blurRadius={isBlurred ? 80 : 0}
+          >
+            {isBlurred && (
+              <View style={styles.eyeIcon}>
+                <Icon3 name="eye" size={35} color="white" />
+                <Text style={{ fontSize: 13, color: "white", marginTop: 10 }}>
+                  Hình ảnh chứa nội dung nhạy cảm
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
+        </TouchableOpacity>
+      ) : (
+        <ImageCustom
+          key={index}
+          source={{ uri: item.url }}
+          resizeMode="cover"
+          style={{ width: screenWidth }}
+        />
+      ),
+    [isBlurred, handleToggleBlur]
+  );
 
   return (
     <View style={styles.container} key={id}>
@@ -153,7 +173,6 @@ const Post = ({
                 useNativeControls
                 resizeMode="cover"
                 shouldPlay={false}
-
                 // onPlaybackStatusUpdate={onPlaybackStatusUpdate}
               />
             </View>
@@ -179,7 +198,8 @@ const Post = ({
               }}
               showPagination
               data={assets}
-              renderItem={renderItems}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item, index }) => renderImageItem({ item, index })}
             />
           )}
         </SafeAreaView>
@@ -266,6 +286,11 @@ const Post = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "rgba(255, 255, 255, 0.5)",
+  },
+  eyeIcon: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

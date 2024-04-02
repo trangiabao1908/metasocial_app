@@ -23,12 +23,14 @@ const ContentNotification = ({ item }) => {
 
   const handleGotoDetailPost = useCallback(async () => {
     const postData = await getDataPost();
-    const index = postData.findIndex((data) => data._id === item?.post?._id);
-    if (index !== -1) {
-      navigation.navigate("DetailPost", {
-        dataPersonal: postData,
-        index: index,
-      });
+    if (postData) {
+      const index = postData.findIndex((data) => data._id === item?.post?._id);
+      if (index !== -1) {
+        navigation.navigate("DetailPost", {
+          dataPersonal: postData,
+          index: index,
+        });
+      }
     }
   }, []);
 

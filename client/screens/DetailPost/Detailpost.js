@@ -90,7 +90,7 @@ const DetailPost = () => {
         index >= 0 &&
         index < postData?.length
       ) {
-        scrollToIndexPost = setTimeout(() => {
+        const scrollToIndexPost = setTimeout(() => {
           setHasScrolled(true);
           scrollToIndex();
         }, 200);

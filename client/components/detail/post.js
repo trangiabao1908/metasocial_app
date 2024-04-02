@@ -6,7 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
-import React, { memo, useEffect } from "react";
+import React, { memo, useCallback, useEffect } from "react";
 import { SwiperFlatList } from "react-native-swiper-flatlist";
 import Icon from "react-native-vector-icons/Entypo";
 import Icon2 from "react-native-vector-icons/AntDesign";
@@ -23,23 +23,24 @@ import { formatTime } from "../../utils/setTime";
 import { Video } from "expo-av";
 
 import { EventRegister } from "react-native-event-listeners";
+import { ImageBackground } from "expo-image";
 
 const screenWidth = Dimensions.get("window").width;
 
-const renderItems = ({ item, index }) => {
-  return (
-    <ImageCustom
-      key={index}
-      source={{
-        uri: item.url,
-      }}
-      resizeMode="cover"
-      style={{
-        width: screenWidth,
-      }}
-    />
-  );
-};
+// const renderItems = ({ item, index }) => {
+//   return (
+//     <ImageCustom
+//       key={index}
+//       source={{
+//         uri: item.url,
+//       }}
+//       resizeMode="cover"
+//       style={{
+//         width: screenWidth,
+//       }}
+//     />
+//   );
+// };
 
 const Post = ({
   author,
@@ -54,7 +55,7 @@ const Post = ({
 }) => {
   const navigate = useNavigation();
   // const [itemHeight, setItemHeight] = useState(null);
-
+  const [isBlurred, setIsBlurred] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalEditVisible, setModalEditVisible] = useState(false);
 
@@ -104,7 +105,42 @@ const Post = ({
       authorID: author._id,
     });
   };
-
+  const handleToggleBlur = useCallback(() => {
+    setIsBlurred((prevIsBlurred) => !prevIsBlurred);
+  }, []);
+  const renderImageItem = useCallback(
+    ({ item, index }) =>
+      item && item.notSafe ? (
+        <TouchableOpacity
+          onPress={handleToggleBlur}
+          key={index}
+          activeOpacity={1}
+        >
+          <ImageBackground
+            source={{ uri: item.url }}
+            style={{ width: screenWidth, aspectRatio: 4 / 3 }}
+            blurRadius={isBlurred ? 80 : 0}
+          >
+            {isBlurred && (
+              <View style={styles.eyeIcon}>
+                <Icon3 name="eye" size={35} color="white" />
+                <Text style={{ fontSize: 13, color: "white", marginTop: 10 }}>
+                  Hình ảnh chứa nội dung nhạy cảm
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
+        </TouchableOpacity>
+      ) : (
+        <ImageCustom
+          key={index}
+          source={{ uri: item.url }}
+          resizeMode="cover"
+          style={{ width: screenWidth }}
+        />
+      ),
+    [isBlurred, handleToggleBlur]
+  );
   return (
     <View style={styles.container} key={id}>
       <View style={posts.container}>
@@ -178,7 +214,8 @@ const Post = ({
               }}
               showPagination
               data={assets}
-              renderItem={renderItems}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item, index }) => renderImageItem({ item, index })}
             />
           )}
         </SafeAreaView>
@@ -264,6 +301,11 @@ const Post = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "rgba(255, 255, 255, 0.5)",
+  },
+  eyeIcon: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

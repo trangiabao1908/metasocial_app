@@ -1,7 +1,7 @@
 import { useRoute } from "@react-navigation/native";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { Formik } from "formik";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +18,7 @@ import HeaderPost from "../../components/post/header";
 import PostScreen from "../../components/post/top";
 import { storage } from "../../firebase/config";
 import { createPostRD, updatePostRD } from "../../redux/post";
+import { checkImage } from "../../api/sightengineApi";
 
 const Post = ({ navigation }) => {
   // const
@@ -47,29 +48,55 @@ const Post = ({ navigation }) => {
       console.log(err);
     }
   };
+  const handleCheckImage = useCallback(async (imageUrl) => {
+    const res = await checkImage(imageUrl);
+    if (res) {
+      const nudityThreshold = 0.5;
+      const offensiveThreshold = 0.5;
+      const isExplicit =
+        res.nudity.sexual_activity > nudityThreshold ||
+        res.nudity.erotica > nudityThreshold ||
+        res.nudity.suggestive > nudityThreshold ||
+        res.nudity.sexual_display > nudityThreshold ||
+        res.nudity.sextoy > nudityThreshold ||
+        res.offensive.prob > offensiveThreshold ||
+        res.alcohol > offensiveThreshold ||
+        res.drugs > offensiveThreshold ||
+        res.weapon > offensiveThreshold ||
+        res.weapon_knife > offensiveThreshold ||
+        res.weapon_firearm > offensiveThreshold;
+      if (isExplicit) {
+        console.log("This picture is not safe for people to see");
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }, []);
 
   async function uploadImage(values) {
     try {
       let arrayData = [];
       setLoading(true);
       const uploadedUrls = await Promise.all(
-        values.image.map(async (item) => {
+        values.image.map(async (item, index) => {
+          let notSafe = false;
           const response = await fetch(item.uri);
           const blob = await response.blob();
           const nameFolder =
             item.type === "image"
               ? `${userID}/post/assets/image/`
               : `${userID}/post/assets/video/`;
-          const nameFile = new Date().getTime() + `_${userID}`;
-
+          const nameFile = new Date().getTime() + `_${userID}` + `_${index}`;
           const storageRef = ref(storage, nameFolder + nameFile);
           const upload = await uploadBytesResumable(storageRef, blob);
           const downloadURLs = await getDownloadURL(upload.ref);
-
+          notSafe = await handleCheckImage(downloadURLs);
           // saveImageToCache(downloadURLs, blob);
           return {
             url: downloadURLs,
             type: item.type,
+            notSafe: notSafe,
           };
         })
       );
@@ -109,7 +136,6 @@ const Post = ({ navigation }) => {
         if (values.image.length > 0) {
           const create = await createPostApi(values, arrayData);
           console.log("post");
-
           if (create.status) {
             const payload = {
               _id: create.post._id,
