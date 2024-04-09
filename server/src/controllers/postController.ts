@@ -1,3 +1,4 @@
+import { Bookmark } from "./../models/Bookmark";
 import { Request, Response } from "express";
 import { handlePost } from "../models/Post";
 import { Post } from "../models/Post";
@@ -117,9 +118,7 @@ const postController = {
   getPostsByID: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-
       const user = await User.findById(id);
-
       const posts = await Post.find({ author: id })
         .sort({ createdAt: -1 })
         .populate("author", ["_id", "username", "picturePath"]);
@@ -127,7 +126,6 @@ const postController = {
       // const idAuthor = posts[0].author._id.toString();
 
       // const user = await User.findById(idAuthor);
-
       return res.status(200).json({
         success: true,
         message: "Get Post By ID Successfully",
@@ -236,12 +234,12 @@ const postController = {
 
       const postDeleted = await handlePost.deletePost(deleteCondition);
 
-      //Delete Notifications
-      await Notification.deleteMany({
-        post: id,
-      });
-
       if (postDeleted) {
+        await Bookmark.deleteMany({ post: id });
+        //Delete Notifications
+        await Notification.deleteMany({
+          post: id,
+        });
         return res.status(200).json({
           status: true,
           postDeleted: postDeleted,

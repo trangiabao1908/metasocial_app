@@ -59,6 +59,7 @@ const Chat = ({ navigation }) => {
   }, []);
   useFocusEffect(
     React.useCallback(() => {
+      console.log("focus");
       const fetchChat = async () => {
         const res = await fetchChatApi();
         if (res && res.success) {

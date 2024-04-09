@@ -1,8 +1,6 @@
-import { useRef, useEffect } from "react";
-import { StyleSheet, Text, View, SafeAreaView, Animated } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import Icon2 from "react-native-vector-icons/Feather";
-import Entypo from "react-native-vector-icons/Entypo";
 
 import { useNavigation } from "@react-navigation/native";
 

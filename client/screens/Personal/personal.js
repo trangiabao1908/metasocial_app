@@ -1,14 +1,13 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
-import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/AntDesign";
-import { useDispatch, useSelector } from "react-redux";
-import { getPostByUserIdApi } from "../../api/postApi";
+
 import * as LocalAuthentication from "expo-local-authentication";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { getPostByUserIdApi } from "../../api/postApi";
 import {
   acceptFriendRequestAPI,
-  getChatIdAPI,
   getFriends,
   getRequestFriendAPI,
   getSentFriendRequestAPI,
@@ -21,6 +20,11 @@ import LeftHeader from "../../components/custom/leftHeader";
 import RightHeader from "../../components/custom/rightHeader";
 import Footer from "../../components/footer";
 import Paper from "../../components/personal/paper";
+import {
+  clearProfile,
+  getProfilePost,
+  getProfileUser,
+} from "../../redux/profile";
 import { setFriends, setNewFriends } from "../../redux/user";
 import socket from "../../utils/configSocket";
 
@@ -30,42 +34,70 @@ const Personal = ({}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const userID = useSelector((state) => state?.userState?.user?._id);
-  const [dataPersonal, setDataPersonal] = useState(null);
-  const [user, setUser] = useState(null);
+
+  const user = useSelector((state) => state?.profileState?.user, shallowEqual);
+  const dataPersonal = useSelector(
+    (state) => state?.profileState?.post,
+    shallowEqual
+  );
+
+  // const [dataPersonal, setDataPersonal] = useState(null);
+  // const [user, setUser] = useState(null);
   const [isAuthor, setIsAuthor] = useState(false);
   const [title, setTitle] = useState("Thêm bạn bè");
   const [friendsRequest, setFriendsRequest] = useState([]);
+  const friends = useSelector((state) => state?.userState?.user?.friends);
+  const isFriend = friends?.findIndex(
+    (friend) => friend._id === route?.params?.authorID
+  );
+
+  const isNeedAccept = friendsRequest?.findIndex(
+    (friend) => friend._id === route?.params?.authorID
+  );
   const isOpenValid = useSelector((state) => state?.userState?.user?.isAdmin);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      console.log("focus khi back");
+      console.log(route);
+      getDataPersonal();
+    });
+    return () => {
+      console.log("Clear unsub");
+      unsubscribe();
+    };
+  }, [navigation]);
   useLayoutEffect(() => {
-    if (type === "viewProfile") {
+    if (type === "viewProfile" && route) {
       navigation.setOptions({
         headerLeft: () => <LeftHeader screen="viewProfile" />,
         headerRight: () => <RightHeader screen="viewProfile" />,
         headerTitleAlign: "center",
-        title: user && user?.username,
+        title: route.params?.authorID === user?._id ? user?.username : "",
       });
     }
-  }, [navigation, type, user]);
+  }, [navigation, type, user, route]);
 
   useEffect(() => {
     if (route.params?.authorID === userID) {
       setIsAuthor(true);
     }
-    if (type) {
-      getDataPersonal();
-      // console.log("call again");
-      const eventListener = () => {
-        EventRegister.addEventListener("onSuccessUpdatedUser", getDataPersonal);
-      };
-      eventListener();
-      return () => {
-        EventRegister.removeEventListener(
-          "onSuccessUpdatedUser",
-          getDataPersonal
-        );
-      };
+    if (route.params?.authorID !== user?._id) {
+      dispatch(clearProfile());
     }
-  }, [type, route]);
+    getDataPersonal();
+  }, [route]);
+  useEffect(() => {
+    socket.on("setTitle", () => {
+      setTitle("Thêm bạn bè");
+    });
+    if (route.params?.authorID !== userID) {
+      getSentFriend();
+      getFriendsRequest();
+    }
+    return () => {
+      socket.off("setTitle");
+    };
+  }, []);
   const getFriendsRequest = async () => {
     const res = await getRequestFriendAPI(userID);
     if (res && res.success) {
@@ -82,39 +114,28 @@ const Personal = ({}) => {
       );
     }
   };
-  useEffect(() => {
-    socket.on("setTitle", () => {
-      setTitle("Thêm bạn bè");
-    });
-    getSentFriend();
-    getFriendsRequest();
-    return () => {
-      socket.off("setTitle");
-    };
-  }, []);
   const getDataPersonal = useCallback(async () => {
+    console.log("getDataPersonal");
     let id = "";
     if (type === "viewProfile") {
-      id = route.params?.authorID;
+      id = route?.params?.authorID;
     } else {
       id = userID;
+      console.log("User ID: " + id);
     }
-
+    console.log("Call API Profile");
     const req = await getPostByUserIdApi(id, type);
     if (req && req?.success) {
-      setDataPersonal(req.data);
-      setUser(req.user);
+      // setDataPersonal(req.data);
+      if (JSON.stringify(req.data) !== JSON.stringify(dataPersonal)) {
+        dispatch(getProfilePost(req.data));
+      }
+
+      if (JSON.stringify(req.user) !== JSON.stringify(user)) {
+        dispatch(getProfileUser(req.user));
+      }
     }
   }, [route]);
-
-  const friends = useSelector((state) => state?.userState?.user?.friends);
-  const isFriend = friends?.findIndex(
-    (friend) => friend._id === route?.params?.authorID
-  );
-
-  const isNeedAccept = friendsRequest?.findIndex(
-    (friend) => friend._id === route?.params?.authorID
-  );
 
   const handleAcceptFriend = async (needAcceptedId) => {
     const res = await acceptFriendRequestAPI(needAcceptedId);
@@ -319,15 +340,6 @@ const Personal = ({}) => {
         </View>
 
         <View style={[styles.flexRow, { marginTop: 20 }]}>
-          {/* <FlatList
-            data={listYourStories}
-            renderItem={renderItems}
-            keyExtractor={(item) => item.id}
-            initialNumToRender={1}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          /> */}
-
           <View style={[styles.flexItem, { marginRight: 15 }]}>
             <View style={styles.content2}>
               <Icon name="plus" size={25} />
@@ -342,7 +354,6 @@ const Personal = ({}) => {
             </Text>
           </View>
         </View>
-
         <Paper dataPersonal={dataPersonal} />
       </View>
       {type === "personal" && (

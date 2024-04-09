@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 
 import {
@@ -24,19 +25,42 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 import { useSelector } from "react-redux";
-import { EventRegister } from "react-native-event-listeners";
-import { getPostByUserIdApi } from "../../api/postApi";
-import Icon from "react-native-vector-icons/AntDesign";
 
+import Icon from "react-native-vector-icons/AntDesign";
 const DetailPost = () => {
   const route = useRoute();
   const data = route?.params?.dataPersonal;
   const index = route?.params?.index;
   const userID = useSelector((state) => state.userState?.user?._id);
   const navigation = useNavigation();
-  const [postData, setPostData] = useState();
+  const startIndex = 0;
+  const [currentStartIndex, setCurrentStartIndex] = useState(index - 4);
+  const [currentIndex, setCurrentIndex] = useState(index + 3);
+
+  const [postData, setPostData] = useState(
+    index === 0
+      ? data.slice(startIndex, startIndex + 3)
+      : data.slice(index - 1, index + 3)
+  );
+
   const flatListRef = useRef(null);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(index === 0 ? true : false);
+  console.log({ currentIndex });
+
+  // const [data, setData] = useState(data)
+
+  // useEffect(() => {
+  //   console.log("useEffect");
+  //   console.log(index);
+  //   if (index >= 0) {
+  //     console.log({ index });
+  //     const newData = data.slice(index, index + 10);
+
+  //     setPostData(newData);
+  //     setCurrentIndex(index);
+  //   }
+  // }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -70,27 +94,27 @@ const DetailPost = () => {
     });
   }, [navigation, route]);
 
-  useEffect(() => {
-    getDataPersonal();
-    const eventListener = () => {
-      EventRegister.addEventListener("onSuccessUpdatePost", getDataPersonal);
-    };
-    eventListener();
-    return () => {
-      EventRegister.removeEventListener("onSuccessUpdatePost", getDataPersonal);
-    };
-  }, [route]);
+  // useEffect(() => {
+  //   // getDataPersonal();
+  //   const eventListener = () => {
+  //     EventRegister.addEventListener("onSuccessUpdatePost", getDataPersonal);
+  //   };
+  //   eventListener();
+  //   return () => {
+  //     EventRegister.removeEventListener("onSuccessUpdatePost", getDataPersonal);
+  //   };
+  // }, [route]);
 
   useFocusEffect(
     useCallback(() => {
       let scrollToIndexPost;
       if (
         !hasScrolled &&
-        postData?.length > 0 &&
+        data?.length > 0 &&
         index >= 0 &&
-        index < postData?.length
+        index < data?.length
       ) {
-        const scrollToIndexPost = setTimeout(() => {
+        scrollToIndexPost = setTimeout(() => {
           setHasScrolled(true);
           scrollToIndex();
         }, 200);
@@ -100,42 +124,69 @@ const DetailPost = () => {
           clearTimeout(scrollToIndexPost);
         }
       };
-    }, [postData, hasScrolled])
+    }, [data, hasScrolled])
   );
 
-  const getDataPersonal = useCallback(async () => {
-    let type = "viewProfile";
-    let id = data[0].author._id;
-    const req = await getPostByUserIdApi(id, type);
-    if (req.success) {
-      setPostData(req.data);
-    }
-  }, [route]);
+  const handleScroll = (event) => {
+    console.log("scroll");
+    const offsetY = event.nativeEvent.contentOffset.y;
+
+    setTimeout(() => {
+      if (!isEmpty) {
+        if (currentStartIndex > 0 && offsetY < 10) {
+          console.log("> 0");
+          const newData = data.slice(currentStartIndex, currentStartIndex + 3);
+          setPostData((prev) => [...newData, ...prev]);
+          setCurrentStartIndex(currentStartIndex - 3);
+        }
+        if (currentStartIndex <= 0) {
+          const newData = data.slice(startIndex, currentStartIndex + 3);
+          setPostData((prev) => [...newData, ...prev]);
+          setCurrentStartIndex(null);
+          setIsEmpty(true);
+        }
+      }
+    }, 500);
+  };
 
   const scrollToIndex = () => {
     flatListRef.current.scrollToIndex({
-      index: index,
+      index: index === 0 ? 0 : 1,
       animated: true,
     });
   };
 
-  const renderPosts = useCallback(({ item, index }) => {
-    let isLike = item.like?.filter((data) => data.user === userID);
+  const handleEndReached = () => {
+    console.log("Reached End");
+    const newData = data.slice(currentIndex, currentIndex + 3);
+    setPostData((prev) => [...prev, ...newData]);
+    setCurrentIndex(currentIndex + 3);
+  };
 
-    return (
-      <Post
-        id={item._id}
-        author={item.author}
-        title={item.title}
-        assets={item.assets}
-        like={item.like}
-        comment={item.comment}
-        isLike={isLike.length ? true : false}
-        updatedAt={item.createdAt}
-        disableComment={item.disableComment}
-      />
-    );
-  });
+  const renderPosts = useCallback(
+    ({ item, index }) => {
+      let isLike = item.like?.filter((data) => data.user === userID);
+
+      const isLiked = isLike && isLike.length > 0;
+
+      return (
+        <Post
+          id={item._id}
+          author={item.author}
+          title={item.title}
+          assets={item.assets}
+          like={item.like}
+          comment={item.comment}
+          isLike={isLiked}
+          updatedAt={item.createdAt}
+          disableComment={item.disableComment}
+          setPostData={setPostData}
+          data={postData}
+        />
+      );
+    },
+    [postData, data]
+  );
 
   return (
     <SafeAreaView style={style.container}>
@@ -147,14 +198,12 @@ const DetailPost = () => {
             renderItem={renderPosts}
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={16}
-            onEndReachedThreshold={0.1}
+            onEndReachedThreshold={0.4}
+            onEndReached={handleEndReached}
             ref={flatListRef}
+            onMomentumScrollEnd={handleScroll}
           />
         </SafeAreaView>
-      </View>
-
-      <View style={style.footer}>
-        <Footer navigation={navigation} />
       </View>
     </SafeAreaView>
   );
@@ -183,25 +232,6 @@ const style = StyleSheet.create({
     right: 0,
     display: "flex",
     alignItems: "center",
-  },
-});
-
-const skeleton = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  avatar: {
-    backgroundColor: "#e0e0e0",
-    marginRight: 10,
-  },
-  postContent: {
-    flex: 1,
-  },
-  skeleton: {
-    backgroundColor: "#e0e0e0",
-    height: 20,
   },
 });
 

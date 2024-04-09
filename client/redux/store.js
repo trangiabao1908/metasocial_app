@@ -1,5 +1,9 @@
 import userReducer from "./user";
 import PostReducer from "./post";
+import imageReducer from "./image";
+import profileReducer from "./profile";
+import bookmarkReducer from "./bookmark";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
@@ -15,9 +19,16 @@ import {
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
+  whitelist: ["userState", "postState"],
 };
 
-const rootReducer = combineReducers({ userState: userReducer, postState: PostReducer });
+const rootReducer = combineReducers({
+  userState: userReducer,
+  postState: PostReducer,
+  imageState: imageReducer,
+  profileState: profileReducer,
+  bookmarkState: bookmarkReducer,
+});
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const store = configureStore({

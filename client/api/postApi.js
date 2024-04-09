@@ -272,3 +272,43 @@ export const searchUserLikeApi = async (postID, q) => {
     console.log(err);
   }
 };
+export const bookmarkPostApi = async (postID) => {
+  const headers = await config();
+  try {
+    const { data } = await API.post(
+      `bookmark/create`,
+      { postID },
+      {
+        headers,
+      }
+    );
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const listBookmarkPostApi = async () => {
+  const headers = await config();
+  try {
+    const { data } = await API.get(`bookmark`, {
+      headers,
+    });
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const deleteBookmarkPostApi = async (postID) => {
+  const headers = await config();
+
+  try {
+    const { data } = await API.delete(`bookmark/delete/${postID}`, {
+      headers,
+    });
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+};

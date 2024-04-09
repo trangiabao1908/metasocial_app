@@ -20,6 +20,7 @@ import { openValidAPI, updatedUserApi } from "../../api/userApi";
 import { setOpenValid, updatedUser } from "../../redux/user";
 import { EventRegister } from "react-native-event-listeners";
 import * as LocalAuthentication from "expo-local-authentication";
+import { updateProfileUser } from "../../redux/profile";
 
 const EditPer = ({ navigation }) => {
   const user = useSelector((state) => state?.userState?.user);
@@ -72,8 +73,13 @@ const EditPer = ({ navigation }) => {
           link: req.user.link,
         };
         dispatch(updatedUser(userUpdate));
-        EventRegister.emit("onSuccessUpdatedUser");
-        navigate.navigate("Personal", { type: "personal" });
+        dispatch(updateProfileUser(userUpdate));
+        // EventRegister.emit("onSuccessUpdatedUser");
+        // navigate.navigate("Personal", {
+        //   type: "personal",
+        //   authorID: user?._id,
+        // });
+        navigate.goBack();
       }
     } catch (error) {
       console.log(error);

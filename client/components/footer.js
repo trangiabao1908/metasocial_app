@@ -5,16 +5,17 @@ import Icon3 from "react-native-vector-icons/Entypo";
 import Icon4 from "react-native-vector-icons/FontAwesome";
 import Icon5 from "react-native-vector-icons/Ionicons";
 import { useSelector } from "react-redux";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import ImageCustom from "./custom/imageCustom";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Footer = ({ navigation, isActive, handleClick }) => {
+const Footer = ({
+  navigation,
+  isActive,
+
+  handleClick,
+}) => {
   const user = useSelector((state) => state?.userState.user);
-  handleNavigateCreatePost = useCallback(() => {
-    console.log("aha");
-    navigation.navigate("Post", { type: "post", data: {} });
-  }, []);
 
   return (
     <SafeAreaView
@@ -78,7 +79,7 @@ const Footer = ({ navigation, isActive, handleClick }) => {
         iconStyle={{
           marginRight: 0,
         }}
-        onPress={handleNavigateCreatePost}
+        onPress={() => navigation.navigate("Post", { type: "post", data: {} })}
       />
       <Icon2.Button
         name="users"
@@ -91,7 +92,12 @@ const Footer = ({ navigation, isActive, handleClick }) => {
         onPress={() => navigation.navigate("Friend")}
       />
       <TouchableOpacity
-        onPress={() => navigation.navigate("Personal", { type: "personal" })}
+        onPress={() =>
+          navigation.navigate("Personal", {
+            type: "personal",
+            authorID: user?._id,
+          })
+        }
       >
         <View>
           <View

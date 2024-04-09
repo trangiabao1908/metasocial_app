@@ -6,6 +6,9 @@ import { Fragment } from "react";
 import { useDispatch } from "react-redux";
 import { setLogout } from "../../redux/user";
 import { clearPost } from "../../redux/post";
+import { clearImage } from "../../redux/image";
+import { clearProfile } from "../../redux/profile";
+import { clearBookmark } from "../../redux/bookmark";
 
 const RightHeader = ({ screen, type }) => {
   const dispatch = useDispatch();
@@ -15,6 +18,9 @@ const RightHeader = ({ screen, type }) => {
     if (req?.success) {
       dispatch(setLogout());
       dispatch(clearPost());
+      dispatch(clearImage());
+      dispatch(clearProfile());
+      dispatch(clearBookmark());
     }
   };
 

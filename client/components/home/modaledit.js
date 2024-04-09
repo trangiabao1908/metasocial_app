@@ -6,31 +6,44 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Icon2 from "react-native-vector-icons/Feather";
-import { deletePostApi, hideCommentApi } from "../../api/postApi";
+import {
+  bookmarkPostApi,
+  deleteBookmarkPostApi,
+  deletePostApi,
+  hideCommentApi,
+} from "../../api/postApi";
 import { deletePostRD, hideComment } from "../../redux/post";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { EventRegister } from "react-native-event-listeners";
-
+import {
+  addBookMarkRD,
+  delBookMarkRD,
+  deleteBookmarkByPostId,
+} from "../../redux/bookmark";
+import { useCallback, useState } from "react";
 const ModalEdit = ({
   modalEditVisible,
   handleCloseModalEdit,
   postID,
   isAuthor,
   disableComment,
+  isBookmark,
 }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const postData = useSelector((state) => state.postState?.post);
-
+  const [getBookmark, setBookmark] = useState(false);
   const handleDeletePost = async () => {
     const del = await deletePostApi(postID);
     if (del.status) {
       // EventRegister.emit("updatePostSuccess");
       // EventRegister.emit("onSuccessUpdatePost");
+      EventRegister.emit("updateSearch");
       console.log("Success");
       dispatch(deletePostRD(postID));
+      dispatch(deleteBookmarkByPostId(postID));
       handleCloseModalEdit();
     }
   };
@@ -50,11 +63,9 @@ const ModalEdit = ({
 
   const handleTurnOffComment = async () => {
     let disableComment = true;
-
     const req = await hideCommentApi(postID, disableComment);
     if (req && req?.status) {
       dispatch(hideComment({ _id: postID }));
-
       handleCloseModalEdit();
     }
   };
@@ -67,7 +78,41 @@ const ModalEdit = ({
       handleCloseModalEdit();
     }
   };
+  const handleBookmarkPost = useCallback(async () => {
+    try {
+      setBookmark(true);
+      const req = await bookmarkPostApi(postID);
 
+      if (req) {
+        console.log("Create Bookmark Success");
+        dispatch(addBookMarkRD(req.newBookmark));
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setBookmark(false);
+      handleCloseModalEdit();
+    }
+  }, []);
+
+  const handleUnBookmark = useCallback(async () => {
+    try {
+      setBookmark(true);
+      const req = await deleteBookmarkPostApi(postID);
+      if (req) {
+        let data = {
+          postID: req.postID,
+          userID: req.user,
+        };
+        dispatch(delBookMarkRD(data));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setBookmark(false);
+      handleCloseModalEdit();
+    }
+  }, []);
   return (
     <View>
       <Modal
@@ -139,14 +184,28 @@ const ModalEdit = ({
                   </View>
                 </View>
                 <View style={styles.borderWidth}>
-                  <View style={[styles.flexRow, styles.itemLeft]}>
-                    <FontAwesome5
-                      name="history"
-                      size={15}
-                      style={styles.icon}
-                    />
-                    <Text style={styles.fontSize16}>Lưu trữ</Text>
-                  </View>
+                  <TouchableOpacity
+                    onPress={
+                      !getBookmark
+                        ? isBookmark !== -1
+                          ? handleUnBookmark
+                          : handleBookmarkPost
+                        : undefined
+                    }
+                  >
+                    <View style={[styles.flexRow, styles.itemLeft]}>
+                      <FontAwesome5
+                        name="history"
+                        size={15}
+                        style={styles.icon}
+                      />
+                      <Text style={styles.fontSize16}>
+                        {(isBookmark && isBookmark) !== -1
+                          ? "Hủy Lưu trữ"
+                          : "Lưu trữ"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.borderWidth}>
                   <View style={[styles.flexRow, styles.itemLeft]}>

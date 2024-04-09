@@ -15,8 +15,14 @@ import { SwiperFlatList } from "react-native-swiper-flatlist";
 import Icon2 from "react-native-vector-icons/AntDesign";
 import Icon from "react-native-vector-icons/Entypo";
 import Icon3 from "react-native-vector-icons/Feather";
+import Icon4 from "react-native-vector-icons/FontAwesome";
 import { useDispatch, useSelector } from "react-redux";
-import { likePostApi } from "../../api/postApi";
+import {
+  bookmarkPostApi,
+  deleteBookmarkPostApi,
+  likePostApi,
+} from "../../api/postApi";
+import { addBookMarkRD, delBookMarkRD } from "../../redux/bookmark";
 import { likePostRD } from "../../redux/post";
 import { formatTime } from "../../utils/setTime";
 import ImageCustom from "../custom/imageCustom";
@@ -42,10 +48,16 @@ const Post = ({
   const [modalEditVisible, setModalEditVisible] = useState(false);
   const [isBlurred, setIsBlurred] = useState(true);
   const [lengthComments, setLengthComments] = useState(comment.length);
-
+  const [getBookmark, setBookmark] = useState(false);
   const dispatch = useDispatch();
 
   const userID = useSelector((state) => state.userState?.user?._id);
+
+  const bookmarks = useSelector((state) => state.bookmarkState?.bookmark);
+
+  const isBookmark = bookmarks.findIndex(
+    (bookmark) => bookmark?.post?._id === id && bookmark?.author?._id === userID
+  );
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -82,6 +94,33 @@ const Post = ({
     }
   };
 
+  const handleBookmarkPost = useCallback(async () => {
+    setBookmark(true);
+    const req = await bookmarkPostApi(id);
+    if (req) {
+      console.log("Create Bookmark Success");
+      dispatch(addBookMarkRD(req.newBookmark));
+      setBookmark(false);
+    }
+  }, []);
+
+  const handleUnBookmark = useCallback(async () => {
+    try {
+      setBookmark(true);
+      const req = await deleteBookmarkPostApi(id);
+      if (req) {
+        let data = {
+          postID: req.postID,
+          userID: req.user,
+        };
+        dispatch(delBookMarkRD(data));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setBookmark(false);
+    }
+  }, []);
   const handleGoToPerScreen = () => {
     navigate.navigate("Personal", {
       type: "viewProfile",
@@ -228,10 +267,23 @@ const Post = ({
             </TouchableOpacity>
             <Icon3 name="send" size={25} style={posts.icon} />
           </View>
-
-          <View>
-            <Icon3 name="bookmark" size={25} style={posts.icon} />
-          </View>
+          <TouchableOpacity
+            onPress={
+              !getBookmark
+                ? isBookmark !== -1
+                  ? handleUnBookmark
+                  : handleBookmarkPost
+                : undefined
+            }
+          >
+            <View>
+              <Icon4
+                name={isBookmark !== -1 ? "bookmark" : "bookmark-o"}
+                size={25}
+                style={posts.icon}
+              />
+            </View>
+          </TouchableOpacity>
         </View>
         <View style={posts.comment}>
           <TouchableOpacity
@@ -278,6 +330,7 @@ const Post = ({
         modalEditVisible={modalEditVisible}
         handleCloseModalEdit={handleCloseModalEdit}
         isAuthor={author._id === userID ? true : false}
+        isBookmark={isBookmark}
       />
     </View>
   );

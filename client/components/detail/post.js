@@ -11,19 +11,22 @@ import { SwiperFlatList } from "react-native-swiper-flatlist";
 import Icon from "react-native-vector-icons/Entypo";
 import Icon2 from "react-native-vector-icons/AntDesign";
 import Icon3 from "react-native-vector-icons/Feather";
+import Icon4 from "react-native-vector-icons/FontAwesome";
 import { useState } from "react";
 import ModalComments from "./modalcmt";
 import ImageCustom from "../custom/imageCustom";
 import ModalEdit from "./modaledit";
 import { likePostApi } from "../../api/postApi";
 import { useDispatch, useSelector } from "react-redux";
-import { likePostRD } from "../../redux/post";
+
 import { useNavigation } from "@react-navigation/native";
 import { formatTime } from "../../utils/setTime";
 import { Video } from "expo-av";
 
 import { EventRegister } from "react-native-event-listeners";
 import { ImageBackground } from "expo-image";
+import { likePostProfileRD } from "../../redux/profile";
+import { likePostRD } from "../../redux/post";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -52,17 +55,23 @@ const Post = ({
   isLike,
   disableComment,
   updatedAt,
+  data,
+  setPostData,
 }) => {
   const navigate = useNavigation();
   // const [itemHeight, setItemHeight] = useState(null);
   const [isBlurred, setIsBlurred] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalEditVisible, setModalEditVisible] = useState(false);
+  const [likePost, isLiked] = useState(isLike);
+  const [lengthLike, setLengthLike] = useState(like?.length);
+  const [lengthCmt, setLengthCmt] = useState(comment?.length);
+  const [isDisable, setIsDisable] = useState(disableComment);
 
   const dispatch = useDispatch();
 
   const userID = useSelector((state) => state.userState?.user?._id);
-
+  const bookmarks = useSelector((state) => state.bookmarkState?.bookmark);
   const handleOpenModal = () => {
     setModalVisible(true);
   };
@@ -94,7 +103,13 @@ const Post = ({
             indexUpdate: indexUpdate,
           })
         );
-        EventRegister.emit("onSuccessUpdatePost");
+        isLiked(type);
+        if (type) {
+          setLengthLike((prev) => prev + 1);
+        } else {
+          setLengthLike((prev) => prev - 1);
+        }
+        // EventRegister.emit("onSuccessUpdatedUser");
       }
     }
   };
@@ -105,6 +120,11 @@ const Post = ({
       authorID: author._id,
     });
   };
+
+  let isBookmark = bookmarks.findIndex(
+    (bookmark) => bookmark.post?._id === id && bookmark.author?._id === userID
+  );
+
   const handleToggleBlur = useCallback(() => {
     setIsBlurred((prevIsBlurred) => !prevIsBlurred);
   }, []);
@@ -222,7 +242,7 @@ const Post = ({
 
         <View style={posts.options}>
           <View style={posts.interact}>
-            {isLike ? (
+            {likePost ? (
               <TouchableOpacity onPress={handleLikePost}>
                 <Icon2
                   name={"heart"}
@@ -245,16 +265,22 @@ const Post = ({
             <Icon3 name="send" size={25} style={posts.icon} />
           </View>
 
-          <View>
-            <Icon3 name="bookmark" size={25} style={posts.icon} />
-          </View>
+          {isBookmark !== -1 ? (
+            <View>
+              <Icon4 name="bookmark" size={25} style={posts.icon} />
+            </View>
+          ) : (
+            <View>
+              <Icon4 name="bookmark-o" size={25} style={posts.icon} />
+            </View>
+          )}
         </View>
         <View style={posts.comment}>
           <TouchableOpacity
             onPress={() => navigate.navigate("LikeScreen", { id })}
           >
             <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
-              {like.length} lượt thích
+              {lengthLike} lượt thích
             </Text>
           </TouchableOpacity>
           <View style={{ display: "flex", flexDirection: "row" }}>
@@ -263,7 +289,7 @@ const Post = ({
             </Text>
             <Text style={{ marginBottom: 5, marginLeft: 5 }}>{title}</Text>
           </View>
-          {disableComment ? (
+          {isDisable ? (
             <View>
               <Text style={{ color: "grey" }}>
                 Tính năng bình luận đã bị tắt.
@@ -273,7 +299,7 @@ const Post = ({
             <TouchableOpacity onPress={handleOpenModal}>
               <View>
                 <Text style={{ color: "grey" }}>
-                  Xem tất cả {comment.length} bình luận
+                  Xem tất cả {lengthCmt} bình luận
                 </Text>
               </View>
             </TouchableOpacity>
@@ -282,6 +308,7 @@ const Post = ({
       </View>
       {/* </View> */}
       <ModalComments
+        setLengthCmt={setLengthCmt}
         postID={id}
         modalVisible={modalVisible}
         handleCloseModal={handleCloseModal}
@@ -293,6 +320,11 @@ const Post = ({
         handleCloseModalEdit={handleCloseModalEdit}
         isAuthor={author._id === userID ? true : false}
         author={author._id}
+        isBookmark={isBookmark}
+        setPostDataProfile={setPostData}
+        data={data}
+        setIsDisable={setIsDisable}
+        isDisable={isDisable}
       />
     </View>
   );

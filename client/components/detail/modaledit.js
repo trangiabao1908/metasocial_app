@@ -23,7 +23,12 @@ const ModalEdit = ({
   postID,
   isAuthor,
   author,
+  isBookmark,
   disableComment,
+  setPostDataProfile,
+  data,
+  setIsDisable,
+  isDisable,
 }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -48,10 +53,12 @@ const ModalEdit = ({
     if (del.status) {
       // EventRegister.emit("updatePostSuccess");
       EventRegister.emit("onSuccessUpdatedUser");
-
       EventRegister.emit("onSuccessUpdatePost");
+      EventRegister.emit("updateSearch");
       console.log("Success");
       dispatch(deletePostRD(postID));
+      const filterDel = data.filter((item) => item._id !== postID);
+      setPostDataProfile(filterDel);
       handleCloseModalEdit();
     }
   };
@@ -74,6 +81,7 @@ const ModalEdit = ({
     if (req && req?.status) {
       EventRegister.emit("onSuccessUpdatedUser");
       EventRegister.emit("onSuccessUpdatePost");
+      setIsDisable(true);
       handleCloseModalEdit();
     }
   };
@@ -83,6 +91,7 @@ const ModalEdit = ({
     if (req && req?.status) {
       EventRegister.emit("onSuccessUpdatedUser");
       EventRegister.emit("onSuccessUpdatePost");
+      setIsDisable(false);
       handleCloseModalEdit();
     }
   };
@@ -164,7 +173,11 @@ const ModalEdit = ({
                       size={15}
                       style={styles.icon}
                     />
-                    <Text style={styles.fontSize16}>Lưu trữ</Text>
+                    <Text style={styles.fontSize16}>
+                      {(isBookmark && isBookmark) !== -1
+                        ? "Hủy lưu trữ"
+                        : "Lưu trữ"}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.borderWidth}>
@@ -179,7 +192,7 @@ const ModalEdit = ({
                 </View>
                 <TouchableOpacity
                   onPress={
-                    disableComment ? handleTurnOnComment : handleTurnOffComment
+                    isDisable ? handleTurnOnComment : handleTurnOffComment
                   }
                 >
                   <View style={styles.borderWidth}>
@@ -190,7 +203,7 @@ const ModalEdit = ({
                         style={styles.icon}
                       />
                       <Text style={styles.fontSize16}>
-                        {disableComment
+                        {isDisable
                           ? `Mở tính năng bình luận`
                           : `Tắt tính năng bình luận`}
                       </Text>

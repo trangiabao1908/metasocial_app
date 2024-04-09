@@ -13,17 +13,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
 import Icon from "react-native-vector-icons/Entypo";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllPostApi } from "../../api/postApi";
+import { getAllPostApi, listBookmarkPostApi } from "../../api/postApi";
 import PostSkeleton from "../../components/custom/skeleton";
 import Footer from "../../components/footer";
 import Post from "../../components/home/post";
 import { clearPost, getAllPostSuccess, loadMorePost } from "../../redux/post";
 import HeaderComponent from "./HeaderComponent";
-
+import { getBookmarkRD } from "../../redux/bookmark";
 const Home = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const postData = useSelector((state) => state.postState?.post);
   const user = useSelector((state) => state.userState?.user?._id);
+  const bookmarks = useSelector((state) => state.bookmarkState?.bookmark);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
@@ -36,7 +37,7 @@ const Home = ({ navigation, route }) => {
   useEffect(() => {
     setTimeout(onRefresh, 200);
     const eventListener = () => {
-      console.log("get Post");
+      getListBookMark();
       onRefresh();
     };
     EventRegister.addEventListener("updatePostSuccess", eventListener);
@@ -109,6 +110,7 @@ const Home = ({ navigation, route }) => {
 
         setRefreshing(false);
       }
+      await getListBookMark();
     } catch (error) {
       console.log(error);
     }
@@ -145,24 +147,36 @@ const Home = ({ navigation, route }) => {
       clearTimeout(clickTimer.current);
     }
   };
+  const getListBookMark = async () => {
+    try {
+      const res = await listBookmarkPostApi();
+      if (res && res.status) {
+        dispatch(getBookmarkRD(res.bookmarks));
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+  const renderPosts = useCallback(
+    ({ item }) => {
+      let isLike = item.like?.findIndex((data) => data.user === user);
 
-  const renderPosts = useCallback(({ item }) => {
-    let isLike = item.like?.findIndex((data) => data.user === user);
-
-    return (
-      <Post
-        id={item._id}
-        author={item.author}
-        title={item.title}
-        assets={item.assets}
-        like={item.like}
-        comment={item.comment}
-        isLike={isLike !== -1 ? true : false}
-        updatedAt={item.createdAt}
-        disableComment={item.disableComment}
-      />
-    );
-  }, []);
+      return (
+        <Post
+          id={item._id}
+          author={item.author}
+          title={item.title}
+          assets={item.assets}
+          like={item.like}
+          comment={item.comment}
+          isLike={isLike !== -1 ? true : false}
+          updatedAt={item.createdAt}
+          disableComment={item.disableComment}
+        />
+      );
+    },
+    [bookmarks]
+  );
 
   return (
     <SafeAreaView style={style.container}>

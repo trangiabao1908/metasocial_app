@@ -19,20 +19,22 @@ import ImageCustom from "../../components/custom/imageCustom";
 import Footer from "../../components/footer";
 import Header from "../../components/search/header";
 import useDebounce from "../../hook/hooks";
+import { useSelector, useDispatch } from "react-redux";
+import { clearImage, getAllImage, loadMoreImage } from "../../redux/image";
+import { EventRegister } from "react-native-event-listeners";
+import { ImageBackground } from "expo-image";
 
 const screenWidth = Dimensions.get("screen").width;
 
 const Search = () => {
-  const [listImages, setListImages] = useState([]);
-  const [updatedAt, setUpdatedAt] = useState("");
+  // const [updatedAt, setUpdatedAt] = useState("");
 
   const [refreshing, setRefreshing] = useState(false);
   const [invisible, setInvisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
-  const [isFirstTime, setIsFirstTime] = useState(true);
 
-  const [isEmpty, setIsEmpty] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(true);
 
   const [isSearch, setIsSearch] = useState(false);
 
@@ -40,38 +42,58 @@ const Search = () => {
 
   const [searchResult, setSearchResult] = useState([]);
 
+  const [isFirstTime, setIsFirstTime] = useState(true);
+
   const debounceValue = useDebounce(q, 500);
 
   const navigation = useNavigation();
 
+  const dispatch = useDispatch();
+
+  const listImage = useSelector((state) => state.imageState?.list);
+
   useEffect(() => {
-    setTimeout(onRefresh, 200);
+    if (listImage.length <= 0) {
+      setTimeout(onRefresh, 200);
+    }
+    const eventListener = () => {
+      onRefresh();
+    };
+    EventRegister.addEventListener("updateSearch", eventListener);
+    return () => {
+      EventRegister.removeEventListener(eventListener);
+    };
   }, []);
 
   useEffect(() => {
-    handleSearchUser();
+    if (isSearch) {
+      handleSearchUser();
+    }
   }, [debounceValue]);
 
   const loadMoreData = async () => {
     console.log("Load more data");
 
     try {
-      const req = await getListImagesApi(updatedAt);
+      let updated = listImage[listImage.length - 1].updatedAt;
+      const req = await getListImagesApi(updated);
       if (req.success) {
         if (req.posts.length > 0) {
-          const latedPost = req.posts[req.posts.length - 1];
-          setUpdatedAt(latedPost.updatedAt);
-          setLoading(false);
-          setListImages((prev) => [...prev, ...req.posts]);
+          const allExist = listImage.every((item1) =>
+            req.posts.map((item2) => item2._id).includes(item1._id)
+          );
+          if (!allExist) {
+            dispatch(loadMoreImage(req.posts));
+          }
           if (req.isLastElement) {
             setIsEmpty(true);
-          } else {
-            setIsEmpty(false);
           }
         }
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,22 +102,19 @@ const Search = () => {
     try {
       let query = "";
 
+      dispatch(clearImage());
       const req = await getListImagesApi(query);
       setInvisible(true);
 
       if (req.success) {
         if (req.posts.length > 0) {
-          const latedPost = req.posts[req.posts.length - 1];
-          setUpdatedAt(latedPost.updatedAt);
-          setListImages(req.posts);
-          setIsFirstTime(false);
+          dispatch(getAllImage(req.posts));
           setInvisible(false);
         }
 
         if (req.isLastElement) {
+          console.log(req.isLastElement);
           setIsEmpty(true);
-        } else {
-          setIsEmpty(false);
         }
         setRefreshing(false);
       }
@@ -105,7 +124,6 @@ const Search = () => {
   };
 
   const onRefresh = () => {
-    console.log("Refreshing");
     setIsEmpty(false);
     setTimeout(() => {
       setRefreshing(true);
@@ -114,8 +132,10 @@ const Search = () => {
   };
 
   const handleEndReached = () => {
-    if (!loading && !isEmpty && !isFirstTime) {
-      console.log("reached");
+    console.log("reached");
+    if (!loading && !isEmpty && !refreshing) {
+      console.log("reached Call API");
+
       setLoading(true);
       setTimeout(() => loadMoreData(), 1000);
     }
@@ -144,7 +164,6 @@ const Search = () => {
     const getDataPost = async () => {
       let type = "viewProfile";
       let id = item.author._id;
-
       const req = await getPostByUserIdApi(id, type);
       if (req.success) {
         return req.data;
@@ -168,7 +187,7 @@ const Search = () => {
               justifyContent: "center",
             }}
           >
-            {item.assets[0].type === "video" ? (
+            {item?.assets[0].type === "video" ? (
               <Video
                 shouldPlay={false}
                 source={{
@@ -180,6 +199,15 @@ const Search = () => {
                   width: screenWidth / 3,
                 }}
                 resizeMode={ResizeMode.COVER}
+              />
+            ) : item?.assets[0].notSafe === true ? (
+              <ImageBackground
+                source={{ uri: item.assets[0]?.url }}
+                style={{
+                  height: screenWidth / 3,
+                  width: screenWidth / 3,
+                }}
+                blurRadius={80}
               />
             ) : (
               <ImageCustom
@@ -306,7 +334,7 @@ const Search = () => {
             key={1}
             data={searchResult}
             renderItem={renderSearchResults}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => item?._id}
             ListHeaderComponent={renderHeader}
           />
         )}
@@ -314,10 +342,13 @@ const Search = () => {
         {!isSearch && !invisible && (
           <FlatList
             key={2}
-            data={listImages}
+            data={listImage && listImage}
             renderItem={renderListImage}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => item?._id}
             numColumns={3}
+            maxToRenderPerBatch={6}
+            windowSize={13}
+            removeClippedSubviews={true}
             onEndReachedThreshold={0.2}
             scrollEventThrottle={16}
             onEndReached={handleEndReached}

@@ -33,7 +33,12 @@ import ImageCustom from "../custom/imageCustom";
 import { formatTime } from "../../utils/setTime";
 import { EventRegister } from "react-native-event-listeners";
 
-const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
+const ModalComments = ({
+  modalVisible,
+  handleCloseModal,
+  postID,
+  setLengthCmt,
+}) => {
   const [allComments, setAllComments] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEdit, setIsEdit] = useState(false);
@@ -93,6 +98,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
         postID: postID,
         comment: values.comment,
       };
+      setLengthCmt((prev) => prev + 1);
       setFieldValue("comment", "");
       const req = await commentPost(data);
       if (req) {
@@ -106,6 +112,7 @@ const ModalComments = ({ modalVisible, handleCloseModal, postID }) => {
     const req = await delCommentPostApi(postID, id);
     if (req && req?.status) {
       console.log("Delete success");
+      setLengthCmt((prev) => prev - 1);
       setIsEdit(false);
       setCommentEdit("");
 

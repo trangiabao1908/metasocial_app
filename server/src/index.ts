@@ -12,7 +12,7 @@ import userRoutes from "./routes/user";
 import notificationRoutes from "./routes/notification";
 import { Server } from "socket.io";
 import { createServer } from "http";
-
+import bookmarkRoutes from "./routes/bookmark";
 // Mongodb config
 dotenv.config();
 configMongoose();
@@ -42,7 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/notification", notificationRoutes);
-
+app.use("/api/bookmark", bookmarkRoutes);
 const PORT = process.env.PORT || 3000;
 
 // app.listen(PORT, () => {

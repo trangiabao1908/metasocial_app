@@ -13,11 +13,9 @@ const ContentNotification = ({ item }) => {
     let id = item.post?.author;
     if (id) {
       const req = await getPostByUserIdApi(id, type);
-      if (req.success) {
+      if (req && req.success) {
         return req.data;
       }
-    } else {
-      Alert.alert("Người dùng đã xóa bài viết này.");
     }
   }, []);
 
@@ -30,6 +28,8 @@ const ContentNotification = ({ item }) => {
           dataPersonal: postData,
           index: index,
         });
+      } else {
+        Alert.alert("Người dùng đã xóa bài viết này.");
       }
     }
   }, []);
